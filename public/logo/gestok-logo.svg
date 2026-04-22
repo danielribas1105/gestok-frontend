@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#27272a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3f3f46;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: Stylized box/inventory mark -->
+  <!-- Outer box shape -->
+  <rect x="10" y="18" width="84" height="84" rx="14" fill="url(#boxGrad)" />
+
+  <!-- Box top face (lighter) -->
+  <path d="M10 32 L52 18 L94 32 L52 46 Z" fill="#f97316" opacity="0.95"/>
+
+  <!-- Box front-left face -->
+  <path d="M10 32 L10 86 Q10 102 24 102 L52 102 L52 46 Z" fill="#3f3f46"/>
+
+  <!-- Box front-right face -->
+  <path d="M94 32 L94 86 Q94 102 80 102 L52 102 L52 46 Z" fill="#27272a"/>
+
+  <!-- Checkmark (Ok) on box front -->
+  <polyline points="30,68 44,80 66,56" stroke="#f97316" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Wordmark -->
+  <!-- "Gest" in zinc -->
+  <text
+    x="114"
+    y="80"
+    font-family="'Georgia', 'Times New Roman', serif"
+    font-size="52"
+    font-weight="700"
+    letter-spacing="-1"
+    fill="#3f3f46"
+  >Gest</text>
+
+  <!-- "Ok" in orange -->
+  <text
+    x="237"
+    y="80"
+    font-family="'Georgia', 'Times New Roman', serif"
+    font-size="52"
+    font-weight="700"
+    letter-spacing="-1"
+    fill="#f97316"
+  >Ok</text>
+
+  <!-- Tagline -->
+  <text
+    x="115"
+    y="100"
+    font-family="'Georgia', 'Times New Roman', serif"
+    font-size="13"
+    font-weight="400"
+    letter-spacing="3.5"
+    fill="#a1a1aa"
+  >GESTÃO DE ESTOQUE</text>
+</svg>

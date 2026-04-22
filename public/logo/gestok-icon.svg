@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#27272a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3f3f46;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="100" height="100" rx="20" fill="url(#bg)"/>
+
+  <!-- Box top face -->
+  <path d="M8 34 L50 16 L92 34 L50 52 Z" fill="#f97316"/>
+
+  <!-- Box front-left face -->
+  <path d="M8 34 L8 76 Q8 88 20 88 L50 88 L50 52 Z" fill="#52525b"/>
+
+  <!-- Box front-right face -->
+  <path d="M92 34 L92 76 Q92 88 80 88 L50 88 L50 52 Z" fill="#27272a"/>
+
+  <!-- Checkmark -->
+  <polyline points="24,68 40,80 66,54" stroke="#f97316" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

@@ -68,7 +68,7 @@ export default function LoginForm() {
 						className="absolute inset-y-1 right-3 flex items-center text-zinc-400 hover:text-zinc-600"
 						tabIndex={-1}
 					>
-						{showPassword ? <Eye /> : <EyeOff />}
+						{showPassword ? <EyeOff /> : <Eye />}
 					</Button>
 				</div>
 			</div>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dark background -->
+  <rect width="400" height="120" rx="12" fill="#18181b"/>
+
+  <!-- Icon: Stylized box -->
+  <!-- Outer box shape -->
+  <rect x="14" y="18" width="84" height="84" rx="14" fill="#27272a" />
+
+  <!-- Box top face -->
+  <path d="M14 32 L56 18 L98 32 L56 46 Z" fill="#f97316" opacity="0.95"/>
+
+  <!-- Box front-left face -->
+  <path d="M14 32 L14 86 Q14 102 28 102 L56 102 L56 46 Z" fill="#3f3f46"/>
+
+  <!-- Box front-right face -->
+  <path d="M98 32 L98 86 Q98 102 84 102 L56 102 L56 46 Z" fill="#27272a"/>
+
+  <!-- Checkmark on box front -->
+  <polyline points="34,68 48,80 70,56" stroke="#f97316" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- "Gest" in white/zinc-100 -->
+  <text
+    x="118"
+    y="80"
+    font-family="'Georgia', 'Times New Roman', serif"
+    font-size="52"
+    font-weight="700"
+    letter-spacing="-1"
+    fill="#f4f4f5"
+  >Gest</text>
+
+  <!-- "Ok" in orange -->
+  <text
+    x="243"
+    y="80"
+    font-family="'Georgia', 'Times New Roman', serif"
+    font-size="52"
+    font-weight="700"
+    letter-spacing="-1"
+    fill="#f97316"
+  >Ok</text>
+
+  <!-- Tagline -->
+  <text
+    x="119"
+    y="100"
+    font-family="'Georgia', 'Times New Roman', serif"
+    font-size="13"
+    font-weight="400"
+    letter-spacing="3.5"
+    fill="#71717a"
+  >GESTÃO DE ESTOQUE</text>
+</svg>

@@ -1,14 +1,14 @@
 import Image from "next/image"
 import LoginForm from "./components/login-form"
-import logo from "@/../public/logo/logo-gestobra-512x512.png"
+import logo from "@/../public/logo/logo-gestok.png"
 
 export default function LoginPage() {
 	return (
 		<main className="min-h-screen flex items-center justify-center bg-muted px-4">
-			<div className="w-full max-w-md space-y-6">
+			<div className="w-full max-w-md space-y-4">
 				{/* Header */}
 				<div className="text-center">
-					<div className="mx-auto w-52 h-52 bg-transparent rounded-xl flex items-center justify-center mb-1">
+					<div className="mx-auto w-96 h-44 bg-transparent rounded-xl flex items-center justify-center">
 						<Image src={logo} alt="Logo" />
 					</div>
 					<h1 className="text-3xl font-bold text-zinc-700">Bem-vindo</h1>
