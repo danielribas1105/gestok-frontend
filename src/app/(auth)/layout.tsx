@@ -19,7 +19,7 @@ export default function RootLayout({
 			<AppSidebar />
 			<SidebarInset>
 				<header className="flex justify-between items-center py-2 px-4">
-					<SidebarTrigger color="#51a41e" />
+					<SidebarTrigger className="text-primary/70" />
 					<div className="flex items-center gap-2">
 						<AddStatementButton />
 						<AddJobButton />

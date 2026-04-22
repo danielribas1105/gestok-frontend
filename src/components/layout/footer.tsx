@@ -2,19 +2,18 @@ import { Code, Coffee, Heart } from "lucide-react"
 
 export default function Footer() {
 	return (
-		<footer className="flex flex-col text-sm">
+		<footer className="flex flex-col text-[12px]">
 			<div className="flex items-center gap-1">
-				<p>Desenvolvido com</p>
+				<p>Developed with</p>
 				<Heart size={20} color="#ff0000" />
-				<p>e</p>
+				<p>and</p>
 				<Coffee size={22} color="#b5842a" />
 			</div>
 			<div className="flex items-center gap-1">
-				<p>por</p>
 				<Code size={22} color="#5e17eb" />
-				<p>DRCode</p>
+				<p>DRCode - Developer</p>
 			</div>
-			<p className="text-sm mt-1">@2026 - Todos os direitos reservados</p>
+			<p className="text-[12px] mt-1">@2026 - All rights reserved</p>
 		</footer>
 	)
 }

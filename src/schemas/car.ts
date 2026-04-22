@@ -12,7 +12,7 @@ export const CarFuelEnum = z.enum([
 export const CarSchema = z.object({
 	id: z.uuid(),
 	model: z.string().min(3, "O modelo deve ter pelo menos 3 caracteres"),
-	license: z
+	plate: z
 		.string()
 		.regex(/^[A-Z]{3}-?\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/, "Placa inválida"), // validação no backend/mask
 	manufacture: z.number().int().positive().nullable().optional(),

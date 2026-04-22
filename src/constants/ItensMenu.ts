@@ -3,45 +3,52 @@ import {
 	CircleDollarSign,
 	CirclePile,
 	Construction,
+	Cookie,
 	FileText,
 	Home,
+	IdCard,
 	ListCheck,
 	LogOut,
+	Logs,
 	Truck,
+	User,
 	UserCircle2,
+	UserStar,
+	Van,
+	Warehouse,
 } from "lucide-react"
 
 // Menu web application
 export const itemsMenu = [
 	{
-		title: "Home",
+		title: "Pedidos",
 		url: "/home",
-		icon: Home,
+		icon: Logs,
 	},
 	{
-		title: "Manifestos",
-		url: "/statements",
-		icon: ListCheck,
+		title: "Estoque",
+		url: "/inventory",
+		icon: Warehouse,
 	},
 	{
-		title: "Movimentações",
-		url: "/jobs",
-		icon: ArrowLeftRight,
+		title: "Produtos",
+		url: "/products",
+		icon: Cookie,
 	},
 	{
-		title: "Obras",
-		url: "/works",
-		icon: Construction,
-	},
-	{
-		title: "Materiais",
-		url: "/materials",
-		icon: CirclePile,
+		title: "Clientes",
+		url: "/clients",
+		icon: UserStar,
 	},
 	{
 		title: "Veículos",
 		url: "/cars",
-		icon: Truck,
+		icon: Van,
+	},
+	{
+		title: "Motoristas",
+		url: "/drivers",
+		icon: IdCard,
 	},
 	{
 		title: "Usuários",
@@ -49,29 +56,8 @@ export const itemsMenu = [
 		icon: UserCircle2,
 	},
 	{
-		title: "Pagamentos",
-		url: "/payments",
-		icon: CircleDollarSign,
-	},
-	{
 		title: "Relatórios",
 		url: "/reports",
 		icon: FileText,
-	},
-]
-
-// Menu landing page
-export const menuLanding = [
-	{
-		title: "HOME",
-		url: "/",
-	},
-	{
-		title: "SOBRE NÓS",
-		url: "/sobre-nos",
-	},
-	{
-		title: "CONTATO",
-		url: "/contato",
 	},
 ]

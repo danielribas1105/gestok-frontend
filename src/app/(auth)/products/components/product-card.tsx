@@ -1,11 +1,11 @@
-import { Payment } from "@/schemas/payment"
+import { Material } from "@/schemas/material"
 import { useState } from "react"
 
-export interface PaymentCardProps {
-	payment: Payment
+export interface ProductCardProps {
+	product: Material
 }
 
-export default function PaymentCard({ payment }: PaymentCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
 	const [open, setOpen] = useState(false)
 
 	return (
@@ -16,14 +16,14 @@ export default function PaymentCard({ payment }: PaymentCardProps) {
 				onKeyDown={(e) => e.key === "Enter" && setOpen(true)}
 				role="button"
 				tabIndex={0}
-				aria-label={`Ver detalhes do material ${payment.id}`}
+				aria-label={`Ver detalhes do produto ${product.name}`}
 			>
 				<div className="flex flex-col gap-1">
 					<header>
-						<h2>Material {payment.job_id}</h2>
+						<h2>Produto {product.name}</h2>
 					</header>
-					<p>Tipo: {payment.m3}</p>
-					<p>Valor m3: {payment.value_m3}</p>
+					<p>Tipo: {product.name}</p>
+					<p>Valor: {product.value_m3}</p>
 				</div>
 			</article>
 			{/* <JobModal open={open} onOpenChange={setOpen} job={job} /> */}

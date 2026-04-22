@@ -8,6 +8,7 @@ import { JobStatusLegend } from "./components/job-status-legend"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useJobs } from "@/hooks/jobs/use-jobs"
 
+// Main screen - list of orders
 export default function HomePage() {
 	const { user, loading } = useSession()
 	const router = useRouter()
@@ -18,8 +19,6 @@ export default function HomePage() {
 			router.push("/login")
 		}
 	}, [loading, user])
-
-	console.log("jobs", jobs)
 
 	if (loading) {
 		return (

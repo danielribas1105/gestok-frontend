@@ -1,5 +1,4 @@
 "use client"
-
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -13,24 +12,24 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { usePaymentMutations } from "@/hooks/payments/use-payment-mutations"
-import { Payment } from "@/schemas/payment"
+import { useMaterialMutations } from "@/hooks/materials/use-material-mutations"
+import { Material } from "@/schemas/material"
 import { useState } from "react"
 
-interface PaymentFormProps {
-	payment?: Payment
+interface ProductFormProps {
+	product?: Material
 	onSuccess?: () => void
 }
 
-export default function PaymentForm({ payment, onSuccess }: PaymentFormProps) {
-	const isEdit = !!payment
+export default function ProductForm({ product, onSuccess }: ProductFormProps) {
+	const isEdit = !!product
 
-	const { createPayment, updatePayment, deletePayment } = usePaymentMutations()
+	const { createMaterial, updateMaterial, deleteMaterial } =
+		useMaterialMutations()
 
 	const [form, setForm] = useState({
-		id: payment?.id || "",
-		job_id: payment?.job_id || "",
-		status: payment?.status || "pending",
+		name: product?.name || "",
+		description: product?.description || "",
 	})
 
 	// ✏️ CREATE / UPDATE
@@ -39,12 +38,12 @@ export default function PaymentForm({ payment, onSuccess }: PaymentFormProps) {
 
 		try {
 			if (isEdit) {
-				await updatePayment.mutateAsync({
-					id: payment!.id,
+				await updateMaterial.mutateAsync({
+					id: product!.id,
 					data: form,
 				})
 			} else {
-				await createPayment.mutateAsync(form)
+				await createMaterial.mutateAsync(form)
 			}
 
 			onSuccess?.()
@@ -53,40 +52,33 @@ export default function PaymentForm({ payment, onSuccess }: PaymentFormProps) {
 
 	// 🗑️ DELETE
 	async function handleDelete() {
-		if (!payment) return
+		if (!product) return
 
 		try {
-			await deletePayment.mutateAsync(payment!.id)
+			await deleteMaterial.mutateAsync(product.id)
 			onSuccess?.()
 		} catch {}
 	}
 
 	const loading =
-		createPayment.isPending ||
-		updatePayment.isPending ||
-		deletePayment.isPending
+		createMaterial.isPending ||
+		updateMaterial.isPending ||
+		deleteMaterial.isPending
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-5">
 			{/* Inputs */}
 			<Input
-				placeholder="ID"
-				value={form.id}
-				onChange={(e) => setForm({ ...form, id: e.target.value })}
+				placeholder="Nome"
+				value={form.name}
+				onChange={(e) => setForm({ ...form, name: e.target.value })}
 				disabled={loading}
 			/>
 
 			<Input
-				placeholder="ID do Trabalho"
-				value={form.job_id}
-				onChange={(e) => setForm({ ...form, job_id: e.target.value })}
-				disabled={loading}
-			/>
-
-			<Input
-				placeholder="Status"
-				value={form.status}
-				onChange={(e) => setForm({ ...form, status: e.target.value })}
+				placeholder="Descrição"
+				value={form.description}
+				onChange={(e) => setForm({ ...form, description: e.target.value })}
 				disabled={loading}
 			/>
 
@@ -97,7 +89,7 @@ export default function PaymentForm({ payment, onSuccess }: PaymentFormProps) {
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
 							<Button type="button" variant="destructive" disabled={loading}>
-								{deletePayment.isPending ? "Excluindo..." : "Excluir"}
+								{deleteMaterial.isPending ? "Excluindo..." : "Excluir"}
 							</Button>
 						</AlertDialogTrigger>
 
@@ -108,7 +100,7 @@ export default function PaymentForm({ payment, onSuccess }: PaymentFormProps) {
 								</AlertDialogTitle>
 								<AlertDialogDescription>
 									Essa ação não pode ser desfeita. Isso irá excluir
-									permanentemente o pagamento <strong>{payment?.id}</strong>.
+									permanentemente o material <strong>{product?.name}</strong>.
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 
@@ -129,7 +121,7 @@ export default function PaymentForm({ payment, onSuccess }: PaymentFormProps) {
 				{/* SUBMIT */}
 				<div className="ml-auto">
 					<Button type="submit" disabled={loading}>
-						{createPayment.isPending || updatePayment.isPending
+						{createMaterial.isPending || updateMaterial.isPending
 							? "Salvando..."
 							: isEdit
 								? "Atualizar"

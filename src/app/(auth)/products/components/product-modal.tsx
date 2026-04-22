@@ -1,32 +1,31 @@
 "use client"
-
 import ModalWrapper from "@/components/layout/modal-wrapper"
 import { Material } from "@/schemas/material"
-import MaterialForm from "./material-form"
+import ProductForm from "./product-form"
 
-interface MaterialModalProps {
+interface ProductModalProps {
 	open: boolean
 	onOpenChange: (v: boolean) => void
-	material?: Material
+	product?: Material
 }
 
-export default function MaterialModal({
+export default function ProductModal({
 	open,
 	onOpenChange,
-	material,
-}: MaterialModalProps) {
+	product,
+}: ProductModalProps) {
 	return (
 		<ModalWrapper
 			open={open}
 			onOpenChange={onOpenChange}
-			title={material ? "Excluir/Editar material" : "Adicionar material"}
+			title={product ? "Excluir/Editar material" : "Adicionar material"}
 			description={
-				material
+				product
 					? "Exclua ou edite as informações do material"
 					: "Preencha as informações do novo material e clique em salvar"
 			}
 		>
-			<MaterialForm material={material} onSuccess={() => onOpenChange(false)} />
+			<ProductForm product={product} onSuccess={() => onOpenChange(false)} />
 		</ModalWrapper>
 	)
 }

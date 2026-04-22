@@ -1,9 +1,8 @@
 "use client"
-
 import TitlePage from "@/components/layout/title-page"
 import { useState } from "react"
-import ListMaterials from "./components/list-materials"
-import MaterialModal from "./components/material-modal"
+import ListProducts from "./components/list-products"
+import ProductModal from "./components/product-modal"
 
 export default function MaterialsPage() {
 	const [open, setOpen] = useState(false)
@@ -17,9 +16,9 @@ export default function MaterialsPage() {
 				onAdd={() => setOpen(true)}
 			/>
 			<div className="flex justify-center">
-				<ListMaterials />
+				<ListProducts />
 			</div>
-			<MaterialModal open={open} onOpenChange={setOpen} />
+			<ProductModal open={open} onOpenChange={setOpen} />
 		</section>
 	)
 }
