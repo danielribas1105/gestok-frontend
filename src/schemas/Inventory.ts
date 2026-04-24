@@ -17,7 +17,6 @@ export const StockMovementSchema = z.object({
 	order_id: z.uuid(),
 	movement_type: StockMovementTypeEnum,
 	quantity: z.number().positive("Valor deve ser positivo"),
-	available_quantity: z.number().positive("Valor deve ser positivo"),
 	movement_date: z.coerce.date().nullable().optional(),
 	observations: z
 		.string()

@@ -15,6 +15,7 @@ export const CarSchema = z.object({
 	plate: z
 		.string()
 		.regex(/^[A-Z]{3}-?\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/, "Placa inválida"), // validação no backend/mask
+	driver_id: z.uuid,
 	manufacture: z.number().int().positive().nullable().optional(),
 	km: z.number().int().nonnegative().nullable().optional(),
 	fuel: CarFuelEnum,
