@@ -45,7 +45,7 @@ export async function refreshAccessToken() {
 
 	try {
 		const tokens = await authApi.refresh({
-			refresh_token, // ✅ TS já entende como string aqui
+			refresh_token,
 		})
 
 		cookieStore.set(ACCESS_COOKIE, tokens.access_token, {
@@ -72,5 +72,10 @@ export async function getSession() {
 
 	if (!token) return null
 
-	return { token }
+	try {
+		const user = await authApi.me(token) // busca o usuário com o token
+		return { token, user }
+	} catch {
+		return null
+	}
 }

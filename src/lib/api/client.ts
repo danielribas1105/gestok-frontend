@@ -1,9 +1,10 @@
 import { ApiError } from "./api-error"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
+const PROXY_BASE = "/api/backend"
 
 export async function clientApi(path: string, options: RequestInit = {}) {
-	const res = await fetch(`${API_URL}${path}`, {
+	const res = await fetch(`${PROXY_BASE}${path}`, {
 		...options,
 		headers: {
 			"Content-Type": "application/json",
