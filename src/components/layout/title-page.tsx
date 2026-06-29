@@ -24,19 +24,22 @@ export default function TitlePage({
 }: TitlePageProps) {
 	const { isAdmin } = usePermissions()
 
-	console.warn("TitlePage renderizado", { title, isAdmin })
 	return (
 		<div
-			className={`${className ?? ""} flex justify-between items-center gap-3`}
+			className={`${className ?? ""} flex flex-col md:flex-row justify-between items-center gap-3`}
 		>
 			<div className="flex flex-1/3 gap-3 items-center">
-				<h1 className="text-3xl text-logo-blue-dark font-logo font-bold">
+				<h1 className="text-3xl text-secondary-foreground font-logo font-bold">
 					{title}
 				</h1>
 				<Tooltip>
 					<TooltipTrigger asChild>
-						{isAdmin && (
-							<Button variant="default" className="flex gap-2" onClick={onAdd}>
+						{isAdmin && onAdd && (
+							<Button
+								variant="default"
+								className="flex gap-2 cursor-pointer"
+								onClick={onAdd}
+							>
 								<Plus />
 							</Button>
 						)}

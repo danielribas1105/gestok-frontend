@@ -1,5 +1,5 @@
 import { useUsers } from "@/hooks/users/use-users"
-import { User } from "@/schemas/user"
+import { User } from "@/schemas/User"
 import UserCard from "./user-card"
 
 export default function ListUsers() {

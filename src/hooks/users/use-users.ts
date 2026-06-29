@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { clientApi } from "@/lib/api/client"
 import { routes } from "@/config/routes"
-import { User } from "@/schemas/user"
+import { User } from "@/schemas/User"
 
 export function useUsers() {
 	return useQuery<User[]>({

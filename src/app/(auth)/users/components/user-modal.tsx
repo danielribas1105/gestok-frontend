@@ -1,7 +1,7 @@
 "use client"
 
 import ModalWrapper from "@/components/layout/modal-wrapper"
-import { User } from "@/schemas/user"
+import { User } from "@/schemas/User"
 import UserForm from "./user-form"
 
 interface UserModalProps {
@@ -19,6 +19,8 @@ export default function UserModal({
 		<ModalWrapper
 			open={open}
 			onOpenChange={onOpenChange}
+			width="50vw"
+			maxHeight="90vh"
 			title={user ? "Editar usuário" : "Adicionar usuário"}
 			description={
 				user
@@ -26,7 +28,11 @@ export default function UserModal({
 					: "Preencha as informações do novo usuário e clique em salvar"
 			}
 		>
-			<UserForm user={user} onSuccess={() => onOpenChange(false)} />
+			<UserForm
+				user={user}
+				onSuccess={() => onOpenChange(false)}
+				onCancel={() => onOpenChange(false)}
+			/>
 		</ModalWrapper>
 	)
 }
