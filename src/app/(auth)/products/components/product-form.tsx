@@ -12,38 +12,85 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useMaterialMutations } from "@/hooks/materials/use-material-mutations"
-import { Material } from "@/schemas/material"
+import { Label } from "@/components/ui/label"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"
+import { useProductMutations } from "@/hooks/products/use-product-mutations"
+import { Product } from "@/schemas/Product"
+import { formatCurrencyBR, parseValueM3 } from "@/utils/format-numbers"
 import { useState } from "react"
 
 interface ProductFormProps {
-	product?: Material
+	product?: Product
 	onSuccess?: () => void
+	onCancel?: () => void
 }
 
-export default function ProductForm({ product, onSuccess }: ProductFormProps) {
+type ProductFormState = {
+	description: string
+	code: string
+	unit: string
+	value: number
+	active: boolean
+}
+
+export default function ProductForm({
+	product,
+	onSuccess,
+	onCancel,
+}: ProductFormProps) {
 	const isEdit = !!product
 
-	const { createMaterial, updateMaterial, deleteMaterial } =
-		useMaterialMutations()
+	const { createProduct, updateProduct, deleteProduct } = useProductMutations()
 
-	const [form, setForm] = useState({
-		name: product?.name || "",
+	const initialForm = {
 		description: product?.description || "",
-	})
+		code: product?.code || "",
+		unit: product?.unit || "",
+		value: product?.value ? String(product.value).replace(".", ",") : "",
+		active: product?.active ?? true,
+	}
+
+	const [form, setForm] = useState(initialForm)
+
+	function handleChange(
+		field: keyof ProductFormState,
+		value: string | boolean,
+	) {
+		setForm((prev) => ({ ...prev, [field]: value }))
+	}
+
+	//  CANCEL
+	function handleCancel() {
+		setForm(initialForm) // descarta qualquer alteração feita
+		onCancel?.() // avisa o pai pra fechar o form/modal
+	}
 
 	// ✏️ CREATE / UPDATE
 	async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
 		e.preventDefault()
 
+		const payload = {
+			code: form.code,
+			description: form.description,
+			unit: form.unit,
+			active: form.active,
+			value: parseValueM3(form.value),
+		}
+
 		try {
 			if (isEdit) {
-				await updateMaterial.mutateAsync({
+				await updateProduct.mutateAsync({
 					id: product!.id,
-					data: form,
+					data: payload,
 				})
 			} else {
-				await createMaterial.mutateAsync(form)
+				await createProduct.mutateAsync(payload)
 			}
 
 			onSuccess?.()
@@ -55,32 +102,79 @@ export default function ProductForm({ product, onSuccess }: ProductFormProps) {
 		if (!product) return
 
 		try {
-			await deleteMaterial.mutateAsync(product.id)
+			await deleteProduct.mutateAsync(product.id)
 			onSuccess?.()
 		} catch {}
 	}
 
 	const loading =
-		createMaterial.isPending ||
-		updateMaterial.isPending ||
-		deleteMaterial.isPending
+		createProduct.isPending ||
+		updateProduct.isPending ||
+		deleteProduct.isPending
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-5">
-			{/* Inputs */}
-			<Input
-				placeholder="Nome"
-				value={form.name}
-				onChange={(e) => setForm({ ...form, name: e.target.value })}
-				disabled={loading}
-			/>
-
-			<Input
-				placeholder="Descrição"
-				value={form.description}
-				onChange={(e) => setForm({ ...form, description: e.target.value })}
-				disabled={loading}
-			/>
+			<div className="grid grid-cols-1 gap-2">
+				<div className="space-y-1">
+					<Label htmlFor="description">Descrição</Label>
+					<Input
+						id="description"
+						placeholder="Descrição/nome do produto"
+						value={form.description}
+						onChange={(e) => setForm({ ...form, description: e.target.value })}
+						disabled={loading}
+					/>
+				</div>
+			</div>
+			<div className="grid grid-cols-4 gap-2">
+				<div className="space-y-1">
+					<Label htmlFor="code">Código</Label>
+					<Input
+						id="code"
+						placeholder="Código"
+						value={form.code}
+						onChange={(e) => handleChange("code", e.target.value)}
+						disabled={loading}
+						required
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="unit">Unidade</Label>
+					<Input
+						id="unit"
+						placeholder="Unidade (CX, PC, LOTE)"
+						value={form.unit}
+						onChange={(e) => handleChange("unit", e.target.value)}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="value">Valor</Label>
+					<Input
+						id="value"
+						placeholder="Valor"
+						value={form.value}
+						onChange={(e) => handleChange("value", e.target.value)}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="status">Status *</Label>
+					<Select
+						value={form.active ? "true" : "false"}
+						onValueChange={(v) => handleChange("active", v === "true")}
+						disabled={loading}
+					>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder="Status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="true">Ativo</SelectItem>
+							<SelectItem value="false">Inativo</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+			</div>
 
 			{/* Actions */}
 			<div className="flex justify-between items-center">
@@ -89,7 +183,7 @@ export default function ProductForm({ product, onSuccess }: ProductFormProps) {
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
 							<Button type="button" variant="destructive" disabled={loading}>
-								{deleteMaterial.isPending ? "Excluindo..." : "Excluir"}
+								{deleteProduct.isPending ? "Excluindo..." : "Excluir"}
 							</Button>
 						</AlertDialogTrigger>
 
@@ -100,7 +194,8 @@ export default function ProductForm({ product, onSuccess }: ProductFormProps) {
 								</AlertDialogTitle>
 								<AlertDialogDescription>
 									Essa ação não pode ser desfeita. Isso irá excluir
-									permanentemente o material <strong>{product?.name}</strong>.
+									permanentemente o produto{" "}
+									<strong>{product?.description}</strong>.
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 
@@ -118,10 +213,18 @@ export default function ProductForm({ product, onSuccess }: ProductFormProps) {
 					</AlertDialog>
 				)}
 
-				{/* SUBMIT */}
-				<div className="ml-auto">
+				{/* SUBMIT OR CANCEL */}
+				<div className="flex items-center gap-2 ml-auto">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={loading}
+						onClick={handleCancel}
+					>
+						Cancelar
+					</Button>
 					<Button type="submit" disabled={loading}>
-						{createMaterial.isPending || updateMaterial.isPending
+						{createProduct.isPending || updateProduct.isPending
 							? "Salvando..."
 							: isEdit
 								? "Atualizar"
