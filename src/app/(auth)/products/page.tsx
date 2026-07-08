@@ -4,15 +4,15 @@ import { useState } from "react"
 import ListProducts from "./components/list-products"
 import ProductModal from "./components/product-modal"
 
-export default function MaterialsPage() {
+export default function ProductsPage() {
 	const [open, setOpen] = useState(false)
 
 	return (
 		<section className="flex flex-col gap-7">
 			<TitlePage
-				title="Materiais"
-				placeholder="Procure pelo nome - Ex: brita"
-				textTooltip="Adicionar material"
+				title="Produtos"
+				placeholder="Procure pelo nome"
+				textTooltip="Adicionar produto"
 				onAdd={() => setOpen(true)}
 			/>
 			<div className="flex justify-center">
