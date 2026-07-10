@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
 	Select,
 	SelectContent,
@@ -21,6 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 import { useCarMutations } from "@/hooks/cars/use-car-mutations"
+import { useDriverList } from "@/hooks/users/use-users"
 import { Car } from "@/schemas/car"
 import { Camera } from "lucide-react"
 import { useState } from "react"
@@ -28,31 +30,44 @@ import { useState } from "react"
 interface CarFormProps {
 	car?: Car
 	onSuccess?: () => void
+	onCancel?: () => void
 }
 
-export default function CarForm({ car, onSuccess }: CarFormProps) {
+export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 	const isEdit = !!car
 	const { createCar, updateCar, deleteCar } = useCarMutations()
+	const { data: driverList, isLoading: loadingDrivers } = useDriverList()
 	const [openAlert, setOpenAlert] = useState(false)
 
-	const [form, setForm] = useState({
+	const initialForm = {
 		model: car?.model ?? "",
-		license: car?.license ?? "",
+		driver_id: car?.driver_id ?? "",
+		plate: car?.plate ?? "",
 		manufacture: car?.manufacture?.toString() ?? "",
 		km: car?.km?.toString() ?? "",
-		fuel: car?.fuel ?? "",
+		fuel: car?.fuel ?? "diesel",
 		strength: car?.strength ?? "",
 		capacity: car?.capacity ?? "",
 		versatility: car?.versatility ?? "",
 		active: car?.active ?? true,
-	})
+	}
+
+	const [form, setForm] = useState(initialForm)
 
 	function handleChange(field: keyof typeof form, value: string | boolean) {
 		setForm((f) => ({ ...f, [field]: value }))
 	}
 
+	//  CANCEL
+	function handleCancel() {
+		setForm(initialForm) // descarta qualquer alteração feita
+		onCancel?.() // avisa o pai pra fechar o form/modal
+	}
+
 	async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
 		e.preventDefault()
+
+		if (!form.driver_id) return // proteção extra, além do required do Select
 
 		const payload = {
 			...form,
@@ -99,104 +114,152 @@ export default function CarForm({ car, onSuccess }: CarFormProps) {
 				</div>
 			</div>
 
-			{/* Modelo + Placa */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<Input
-					placeholder="Modelo"
-					value={form.model}
-					onChange={(e) => handleChange("model", e.target.value)}
-					disabled={loading}
-					required
-				/>
-				<Input
-					placeholder="Placa (ex: ABC1D23)"
-					value={form.license}
-					onChange={(e) =>
-						handleChange("license", e.target.value.toUpperCase())
-					}
-					disabled={loading}
-					required
-				/>
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+				<div className="col-span-2 space-y-1">
+					<Label htmlFor="model">Modelo*</Label>
+					<Input
+						id="model"
+						placeholder="Modelo"
+						value={form.model}
+						onChange={(e) => handleChange("model", e.target.value)}
+						disabled={loading}
+						required
+					/>
+				</div>
+				<div className="col-span-2 space-y-1">
+					<Label htmlFor="driver">Motorista*</Label>
+					<Select
+						value={form.driver_id}
+						onValueChange={(v) => handleChange("driver_id", v)}
+						disabled={loading || loadingDrivers}
+						required
+					>
+						<SelectTrigger id="driver" className="w-full">
+							<SelectValue
+								placeholder={
+									loadingDrivers
+										? "Carregando motoristas..."
+										: "Selecione um motorista"
+								}
+							/>
+						</SelectTrigger>
+						<SelectContent>
+							{driverList?.map((driver) => (
+								<SelectItem key={driver.id} value={driver.id}>
+									{driver.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
 
-			{/* Ano + KM */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<Input
-					type="number"
-					placeholder="Ano de fabricação"
-					value={form.manufacture}
-					onChange={(e) => handleChange("manufacture", e.target.value)}
-					disabled={loading}
-				/>
-				<Input
-					type="number"
-					placeholder="Quilometragem (km)"
-					value={form.km}
-					onChange={(e) => handleChange("km", e.target.value)}
-					disabled={loading}
-				/>
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+				<div className="space-y-1">
+					<Label htmlFor="plate">Placa*</Label>
+					<Input
+						id="plate"
+						placeholder="Placa (ex: ABC1D23)"
+						value={form.plate}
+						onChange={(e) =>
+							handleChange("plate", e.target.value.toUpperCase())
+						}
+						disabled={loading}
+						required
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="manufacture">Fabricação</Label>
+					<Input
+						id="manufacture"
+						placeholder="Ano de fabricação"
+						value={form.manufacture}
+						onChange={(e) => handleChange("manufacture", e.target.value)}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="km">Quilometragem</Label>
+					<Input
+						id="km"
+						type="number"
+						placeholder="Quilometragem (km)"
+						value={form.km}
+						onChange={(e) => handleChange("km", e.target.value)}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="fuel">Combustível</Label>
+					<Select
+						value={form.fuel}
+						onValueChange={(v) => handleChange("fuel", v)}
+						disabled={loading}
+					>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder="Combustível" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="gasoline">Gasolina</SelectItem>
+							<SelectItem value="ethanol">Etanol</SelectItem>
+							<SelectItem value="diesel">Diesel</SelectItem>
+							<SelectItem value="flex">Flex</SelectItem>
+							<SelectItem value="electric">Elétrico</SelectItem>
+							<SelectItem value="hybrid">Híbrido</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
 
-			{/* Combustível + Potência */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<Select
-					value={form.fuel}
-					onValueChange={(v) => handleChange("fuel", v)}
-					disabled={loading}
-				>
-					<SelectTrigger>
-						<SelectValue placeholder="Combustível" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="gasoline">Gasolina</SelectItem>
-						<SelectItem value="ethanol">Etanol</SelectItem>
-						<SelectItem value="diesel">Diesel</SelectItem>
-						<SelectItem value="flex">Flex</SelectItem>
-						<SelectItem value="electric">Elétrico</SelectItem>
-						<SelectItem value="hybrid">Híbrido</SelectItem>
-					</SelectContent>
-				</Select>
-
-				<Input
-					placeholder="Potência (ex: 150cv)"
-					value={form.strength}
-					onChange={(e) => handleChange("strength", e.target.value)}
-					disabled={loading}
-				/>
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+				<div className="space-y-1">
+					<Label htmlFor="capacity">Capacidade(m3)*</Label>
+					<Input
+						id="capacity"
+						placeholder="Capacidade de carga"
+						value={form.capacity}
+						onChange={(e) => handleChange("capacity", e.target.value)}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="strength">Potência</Label>
+					<Input
+						id="strength"
+						placeholder="Potência (ex: 150cv)"
+						value={form.strength}
+						onChange={(e) => handleChange("strength", e.target.value)}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="versatility">Versatilidade</Label>
+					<Input
+						id="versatility"
+						placeholder="Versatilidade (ex: SUV, Pickup)"
+						value={form.versatility}
+						onChange={(e) => handleChange("versatility", e.target.value)}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="status">Status</Label>
+					<Select
+						value={form.active ? "true" : "false"}
+						onValueChange={(v) => handleChange("active", v === "true")}
+						disabled={loading}
+					>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder="Status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="true">Ativo</SelectItem>
+							<SelectItem value="false">Inativo</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
 
-			{/* Capacidade + Versatilidade */}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<Input
-					placeholder="Capacidade (ex: 5 pessoas)"
-					value={form.capacity}
-					onChange={(e) => handleChange("capacity", e.target.value)}
-					disabled={loading}
-				/>
-				<Input
-					placeholder="Versatilidade (ex: SUV, Pickup)"
-					value={form.versatility}
-					onChange={(e) => handleChange("versatility", e.target.value)}
-					disabled={loading}
-				/>
-			</div>
-
-			{/* Status */}
-			<Select
-				value={form.active ? "true" : "false"}
-				onValueChange={(v) => handleChange("active", v === "true")}
-				disabled={loading}
-			>
-				<SelectTrigger>
-					<SelectValue placeholder="Status" />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value="true">Ativo</SelectItem>
-					<SelectItem value="false">Inativo</SelectItem>
-				</SelectContent>
-			</Select>
-
-			{/* Actions */}
 			<div className="flex items-center justify-between">
 				{isEdit && (
 					<AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
@@ -226,7 +289,15 @@ export default function CarForm({ car, onSuccess }: CarFormProps) {
 					</AlertDialog>
 				)}
 
-				<div className="ml-auto">
+				<div className="flex items-center gap-2 ml-auto">
+					<Button
+						type="button"
+						variant="outline"
+						disabled={loading}
+						onClick={handleCancel}
+					>
+						Cancelar
+					</Button>
 					<Button type="submit" disabled={loading}>
 						{createCar.isPending || updateCar.isPending
 							? "Salvando..."

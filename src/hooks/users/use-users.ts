@@ -11,3 +11,10 @@ export function useUsers() {
 		queryFn: () => clientApi(routes.users.list),
 	})
 }
+
+export function useDriverList() {
+	return useQuery<User[]>({
+		queryKey: ["users"],
+		queryFn: () => clientApi(routes.users.getDriverList),
+	})
+}
