@@ -10,6 +10,14 @@ export const DriverProfileReadSchema = z.object({
 	ear: z.boolean().nullable().optional(),
 })
 
+export const DriverInfoSchema = z.object({
+	id: z.uuid(),
+	name: z.string(),
+	email: z.string().email(),
+	phone: z.string().nullable().optional(),
+	driver_profile: DriverProfileReadSchema.nullable().optional(),
+})
+
 // Escrita — o que é enviado no create/update
 export const DriverProfileCreateSchema = z.object({
 	license: z.string().min(1, "Número da CNH é obrigatório"),
@@ -19,4 +27,5 @@ export const DriverProfileCreateSchema = z.object({
 })
 
 export type DriverProfileRead = z.infer<typeof DriverProfileReadSchema>
+export type DriverProfileInfo = z.infer<typeof DriverInfoSchema>
 export type DriverProfileCreate = z.infer<typeof DriverProfileCreateSchema>

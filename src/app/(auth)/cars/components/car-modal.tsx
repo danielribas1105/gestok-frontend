@@ -15,6 +15,8 @@ export default function CarModal({ open, onOpenChange, car }: CarModalProps) {
 		<ModalWrapper
 			open={open}
 			onOpenChange={onOpenChange}
+			width="50vw"
+			maxHeight="90vh"
 			title={car ? "Editar veículo" : "Adicionar veículo"}
 			description={
 				car
@@ -22,7 +24,11 @@ export default function CarModal({ open, onOpenChange, car }: CarModalProps) {
 					: "Preencha as informações do novo veículo e clique em salvar"
 			}
 		>
-			<CarForm car={car} onSuccess={() => onOpenChange(false)} />
+			<CarForm
+				car={car}
+				onSuccess={() => onOpenChange(false)}
+				onCancel={() => onOpenChange(false)}
+			/>
 		</ModalWrapper>
 	)
 }
