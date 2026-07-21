@@ -1,6 +1,8 @@
 "use client"
 import TitlePage from "@/components/layout/title-page"
 import { useState } from "react"
+import ListClients from "./components/list-clients"
+import ClientModal from "./components/client-modal"
 
 export default function ClientsPage() {
 	const [open, setOpen] = useState(false)
@@ -13,8 +15,10 @@ export default function ClientsPage() {
 				textTooltip="Adicionar Cliente"
 				onAdd={() => setOpen(true)}
 			/>
-			<div className="flex justify-center">{/* <ListJobs /> */}</div>
-			{/* <JobModal open={open} onOpenChange={setOpen} /> */}
+			<div className="flex justify-center">
+				<ListClients />
+			</div>
+			<ClientModal open={open} onOpenChange={setOpen} />
 		</section>
 	)
 }
