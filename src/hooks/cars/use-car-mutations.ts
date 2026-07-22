@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { clientApi } from "@/lib/api/client"
 import { routes } from "@/config/routes"
 import { toast } from "sonner"
-import { Car } from "@/schemas/car"
+import { Car } from "@/schemas/Car"
 
 export function useCarMutations() {
 	const queryClient = useQueryClient()

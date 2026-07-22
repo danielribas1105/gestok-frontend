@@ -46,11 +46,6 @@ export const itemsMenu = [
 		icon: Van,
 	},
 	{
-		title: "Motoristas",
-		url: "/drivers",
-		icon: IdCard,
-	},
-	{
 		title: "Usuários",
 		url: "/users",
 		icon: UserCircle2,

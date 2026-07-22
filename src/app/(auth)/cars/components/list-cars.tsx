@@ -1,5 +1,5 @@
 import { useCars } from "@/hooks/cars/use-cars"
-import { Car } from "@/schemas/car"
+import { Car } from "@/schemas/Car"
 import CarCard from "./car-card"
 
 export default function ListCars() {

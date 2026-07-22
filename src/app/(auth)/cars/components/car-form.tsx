@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select"
 import { useCarMutations } from "@/hooks/cars/use-car-mutations"
 import { useDriverList } from "@/hooks/users/use-users"
-import { Car } from "@/schemas/car"
+import { Car } from "@/schemas/Car"
 import { Camera } from "lucide-react"
 import { useState } from "react"
 

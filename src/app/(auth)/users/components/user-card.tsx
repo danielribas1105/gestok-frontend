@@ -16,7 +16,6 @@ export interface UserCardProps {
 export default function UserCard({ user }: UserCardProps) {
 	const [open, setOpen] = useState(false)
 
-	console.warn("UserCard", user) // Para verificar re-renderizações
 	return (
 		<>
 			<article

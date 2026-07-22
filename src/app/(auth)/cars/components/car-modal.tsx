@@ -1,7 +1,7 @@
 "use client"
 
 import ModalWrapper from "@/components/layout/modal-wrapper"
-import { Car } from "@/schemas/car"
+import { Car } from "@/schemas/Car"
 import CarForm from "./car-form"
 
 interface CarModalProps {
