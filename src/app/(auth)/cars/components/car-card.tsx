@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
-import { Car } from "@/schemas/car"
+import { Car } from "@/schemas/Car"
 import { useState } from "react"
 import CarModal from "./car-modal"
 import { formatDate } from "@/utils/format-date"

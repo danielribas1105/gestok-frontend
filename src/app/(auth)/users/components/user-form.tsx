@@ -28,14 +28,13 @@ import {
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import { USER_LICENSE_TYPES } from "@/constants/Users"
 
 interface UserFormProps {
 	user?: User
 	onSuccess?: () => void
 	onCancel?: () => void
 }
-
-const LICENSE_TYPES = ["A", "B", "C", "D", "E"] as const
 
 export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 	const isEdit = !!user
@@ -238,7 +237,7 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 										<SelectValue placeholder="Categoria" />
 									</SelectTrigger>
 									<SelectContent>
-										{LICENSE_TYPES.map((t) => (
+										{USER_LICENSE_TYPES.map((t) => (
 											<SelectItem key={t} value={t}>
 												{t}
 											</SelectItem>

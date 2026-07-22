@@ -8,6 +8,7 @@ export const routes = {
 		create: "/users",
 		update: (id: string) => `/users/${id}`,
 		delete: (id: string) => `/users/${id}`,
+		getById: (id: string) => `/users/${id}`,
 		getDriverList: "/users/driver-list",
 	},
 	cars: {

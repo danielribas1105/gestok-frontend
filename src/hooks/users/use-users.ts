@@ -12,6 +12,14 @@ export function useUsers() {
 	})
 }
 
+export function useUser(id: string) {
+	return useQuery<User>({
+		queryKey: ["users", id],
+		queryFn: () => clientApi(routes.users.getById(id)),
+		enabled: !!id,
+	})
+}
+
 export function useDriverList() {
 	return useQuery<User[]>({
 		queryKey: ["users"],
