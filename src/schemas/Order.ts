@@ -1,6 +1,6 @@
 import z from "zod"
 
-export const OrderTypeEnum = z.enum(["in", "out"])
+export const OrderTypeEnum = z.enum(["bonus", "tasting", "sale"])
 
 export const OrderStatusEnum = z.enum([
 	"pending",
@@ -15,6 +15,9 @@ export const OrderSchema = z.object({
 	code: z.string(),
 	client_id: z.uuid(),
 	car_id: z.uuid(),
+	seller_id: z.uuid(),
+	supervisor_id: z.uuid(),
+	manager_id: z.uuid(),
 	created_by: z.uuid(),
 	observations: z
 		.string()
@@ -28,5 +31,4 @@ export const OrderSchema = z.object({
 	processed_at: z.coerce.date().nullable().optional(),
 })
 
-// Gerar o tipo TypeScript automaticamente
 export type Order = z.infer<typeof OrderSchema>

@@ -1,11 +1,11 @@
 const statusConfig = [
-	{ label: "Pendente", status: "pending", color: "bg-yellow-400" },
+	{ label: "Concluído", status: "concluded", color: "bg-green-500" },
 	{ label: "Em andamento", status: "in_progress", color: "bg-blue-500" },
-	{ label: "Concluído", status: "completed", color: "bg-green-500" },
+	{ label: "Pendente", status: "pending", color: "bg-yellow-400" },
 	{ label: "Cancelado", status: "canceled", color: "bg-red-500" },
 ]
 
-export function JobStatusLegend() {
+export function OrderStatusLegend() {
 	return (
 		<div className="flex items-center gap-4">
 			{statusConfig.map(({ label, status, color }) => (

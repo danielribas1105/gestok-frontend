@@ -4,7 +4,6 @@ import { DriverProfileCreateSchema, DriverProfileReadSchema } from "./Driver"
 
 export const UserProfileEnum = z.enum(["admin", "operator", "driver"])
 
-// Leitura — o que vem da API
 export const UserSchema = z.object({
 	id: z.string().uuid(),
 	name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),

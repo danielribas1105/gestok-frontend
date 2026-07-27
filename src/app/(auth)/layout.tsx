@@ -8,6 +8,7 @@ import {
 import AddJobButton from "@/components/add-job-btn"
 import LogoutButton from "@/components/logout-button"
 import AddStatementButton from "@/components/add-statment-btn"
+import UploadFileButton from "@/components/upload-file-btn"
 
 export default function RootLayout({
 	children,
@@ -21,8 +22,7 @@ export default function RootLayout({
 				<header className="flex justify-between items-center py-2 px-4">
 					<SidebarTrigger className="text-primary/70" />
 					<div className="flex items-center gap-2">
-						<AddStatementButton />
-						<AddJobButton />
+						<UploadFileButton />
 						<LogoutButton />
 					</div>
 				</header>
