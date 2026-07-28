@@ -25,6 +25,13 @@ export const routes = {
 		delete: (id: string) => `/clients/${id}`,
 		getById: (id: string) => `/clients/${id}`,
 	},
+	drivers: {
+		list: "/drivers",
+		create: "/drivers",
+		update: (id: string) => `/drivers/${id}`,
+		delete: (id: string) => `/drivers/${id}`,
+		getById: (id: string) => `/drivers/${id}`,
+	},
 	works: {
 		list: "/works",
 		create: "/works",

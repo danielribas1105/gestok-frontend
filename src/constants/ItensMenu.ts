@@ -1,19 +1,10 @@
 import {
-	ArrowLeftRight,
-	CircleDollarSign,
-	CirclePile,
-	Construction,
 	Cookie,
 	FileText,
-	Home,
 	IdCard,
-	ListCheck,
-	LogOut,
 	Logs,
-	Truck,
-	User,
-	UserCircle2,
-	UserStar,
+	Store,
+	UserPen,
 	Van,
 	Warehouse,
 } from "lucide-react"
@@ -38,7 +29,7 @@ export const itemsMenu = [
 	{
 		title: "Clientes",
 		url: "/clients",
-		icon: UserStar,
+		icon: Store,
 	},
 	{
 		title: "Veículos",
@@ -46,9 +37,14 @@ export const itemsMenu = [
 		icon: Van,
 	},
 	{
+		title: "Motoristas",
+		url: "/drivers",
+		icon: IdCard,
+	},
+	{
 		title: "Usuários",
 		url: "/users",
-		icon: UserCircle2,
+		icon: UserPen,
 	},
 	{
 		title: "Relatórios",

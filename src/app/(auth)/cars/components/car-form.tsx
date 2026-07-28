@@ -22,7 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 import { useCarMutations } from "@/hooks/cars/use-car-mutations"
-import { useDriverList } from "@/hooks/users/use-users"
+import { useDrivers } from "@/hooks/drivers/use-drivers"
 import { Car } from "@/schemas/Car"
 import { Camera } from "lucide-react"
 import { useState } from "react"
@@ -36,7 +36,7 @@ interface CarFormProps {
 export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 	const isEdit = !!car
 	const { createCar, updateCar, deleteCar } = useCarMutations()
-	const { data: driverList, isLoading: loadingDrivers } = useDriverList()
+	const { data: drivers, isLoading: loadingDrivers } = useDrivers()
 	const [openAlert, setOpenAlert] = useState(false)
 
 	const initialForm = {
@@ -144,7 +144,7 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 							/>
 						</SelectTrigger>
 						<SelectContent>
-							{driverList?.map((driver) => (
+							{drivers?.map((driver) => (
 								<SelectItem key={driver.id} value={driver.id}>
 									{driver.name}
 								</SelectItem>

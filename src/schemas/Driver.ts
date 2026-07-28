@@ -1,31 +1,38 @@
+import { validateCPF } from "@/utils/validate-cpf"
+import { validatePhone } from "@/utils/validate-phone"
 import z from "zod"
 
 export const LicenseTypeEnum = z.enum(["A", "B", "C", "D", "E"])
 
-// Leitura — o que vem da API (sem user_id, pois já está aninhado no User)
-export const DriverProfileReadSchema = z.object({
+export const DriverSchema = z.object({
+	id: z.uuid(),
 	license: z.string(),
 	type: LicenseTypeEnum,
 	validity: z.coerce.date().nullable().optional(),
 	ear: z.boolean().nullable().optional(),
+	name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
+	cpf: z
+		.string()
+		.regex(
+			/^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+			"CPF deve estar no formato XXX.XXX.XXX-XX",
+		)
+		.refine(validateCPF, "CPF inválido")
+		.nullable()
+		.optional(),
+	phone: z
+		.string()
+		.regex(
+			/^\(\d{2}\)\s\d{4,5}-\d{4}$/,
+			"Telefone deve estar no formato (XX) XXXXX-XXXX",
+		)
+		.refine(validatePhone, "Telefone inválido")
+		.nullable()
+		.optional(),
+	active: z.boolean().optional(),
+	created_at: z.coerce.date().nullable().optional(),
+	image: z.string().nullable().optional(),
 })
 
-export const DriverInfoSchema = z.object({
-	id: z.uuid(),
-	name: z.string(),
-	email: z.string().email(),
-	phone: z.string().nullable().optional(),
-	driver_profile: DriverProfileReadSchema.nullable().optional(),
-})
-
-// Escrita — o que é enviado no create/update
-export const DriverProfileCreateSchema = z.object({
-	license: z.string().min(1, "Número da CNH é obrigatório"),
-	type: LicenseTypeEnum,
-	validity: z.coerce.date().nullable().optional(),
-	ear: z.boolean().nullable().optional(),
-})
-
-export type DriverProfileRead = z.infer<typeof DriverProfileReadSchema>
-export type DriverProfileInfo = z.infer<typeof DriverInfoSchema>
-export type DriverProfileCreate = z.infer<typeof DriverProfileCreateSchema>
+export type Driver = z.infer<typeof DriverSchema>
+export type LICENSE_TYPES = z.infer<typeof LicenseTypeEnum>
