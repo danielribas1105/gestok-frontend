@@ -1,19 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select"
-import { useUserMutations } from "@/hooks/users/use-user-mutations"
-import { User } from "@/schemas/User"
-import { DriverProfileCreate } from "@/schemas/Driver"
-import { Camera } from "lucide-react"
-import { useState } from "react"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -25,10 +11,22 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Separator } from "@/components/ui/separator"
-import { USER_LICENSE_TYPES } from "@/constants/Users"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"
+import { useUserMutations } from "@/hooks/users/use-user-mutations"
+import { User } from "@/schemas/User"
+import { formatCPFInput } from "@/utils/validate-cpf"
+import { formatPhoneInput } from "@/utils/validate-phone"
+import { Camera } from "lucide-react"
+import { useState } from "react"
 
 interface UserFormProps {
 	user?: User
@@ -51,30 +49,13 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 		confirm_password: "",
 	})
 
-	// 👇 Popula com dados existentes se for edição de um motorista
-	const [driverForm, setDriverForm] = useState<DriverProfileCreate>({
-		license: user?.driver_profile?.license ?? "",
-		type: user?.driver_profile?.type ?? "B",
-		validity: user?.driver_profile?.validity ?? null,
-		ear: user?.driver_profile?.ear ?? false,
-	})
-
 	const [passwordError, setPasswordError] = useState("")
-
-	const isDriver = form.profile === "driver"
 
 	function handleChange(field: keyof typeof form, value: string) {
 		setForm((f) => ({ ...f, [field]: value }))
 		if (field === "confirm_password" || field === "password") {
 			setPasswordError("")
 		}
-	}
-
-	function handleDriverChange(
-		field: keyof DriverProfileCreate,
-		value: string | boolean | Date | null,
-	) {
-		setDriverForm((f) => ({ ...f, [field]: value }))
 	}
 
 	async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -89,18 +70,9 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
 		try {
 			if (isEdit) {
-				await updateUser.mutateAsync({
-					id: user!.id,
-					data: {
-						...payload,
-						...(isDriver && { driver: driverForm }),
-					},
-				})
+				await updateUser.mutateAsync({ id: user!.id, data: payload })
 			} else {
-				await createUser.mutateAsync({
-					...payload,
-					...(isDriver && { driver: driverForm }),
-				})
+				await createUser.mutateAsync(payload)
 			}
 			onSuccess?.()
 		} catch {}
@@ -119,7 +91,6 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-5">
-			{/* Avatar */}
 			<div className="flex items-center gap-4">
 				<div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/30 bg-muted text-muted-foreground">
 					<Camera className="h-6 w-6" />
@@ -134,7 +105,6 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 				</div>
 			</div>
 
-			{/* Nome + E-mail */}
 			<div className="grid grid-cols-2 gap-4">
 				<div className="space-y-1">
 					<Label htmlFor="name">Nome</Label>
@@ -161,25 +131,32 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 				</div>
 			</div>
 
-			{/* CPF + Telefone + Perfil */}
 			<div className="grid grid-cols-3 gap-2">
 				<div className="space-y-1">
-					<Label htmlFor="cpf">CPF</Label>
+					<Label htmlFor="cpf-user">CPF</Label>
 					<Input
-						id="cpf"
-						placeholder="XXX.XXX.XXX-XX"
-						value={form.cpf ?? ""}
-						onChange={(e) => handleChange("cpf", e.target.value)}
+						id="cpf-user"
+						placeholder="xxx.xxx.xxx-xx"
+						inputMode="numeric"
+						maxLength={14}
+						value={form.cpf}
+						onChange={(e) =>
+							handleChange("cpf", formatCPFInput(e.target.value))
+						}
 						disabled={loading}
 					/>
 				</div>
 				<div className="space-y-1">
-					<Label htmlFor="phone">Telefone</Label>
+					<Label htmlFor="phone-user">Telefone</Label>
 					<Input
-						id="phone"
-						placeholder="(XX) XXXXX-XXXX"
-						value={form.phone ?? ""}
-						onChange={(e) => handleChange("phone", e.target.value)}
+						id="phone-user"
+						placeholder="(xx) xxxxx-xxxx"
+						inputMode="numeric"
+						maxLength={15}
+						value={form.phone}
+						onChange={(e) =>
+							handleChange("phone", formatPhoneInput(e.target.value))
+						}
 						disabled={loading}
 					/>
 				</div>
@@ -196,102 +173,12 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 						<SelectContent>
 							<SelectItem value="admin">Administrador</SelectItem>
 							<SelectItem value="operator">Operador</SelectItem>
-							<SelectItem value="driver">Motorista</SelectItem>
+							<SelectItem value="user">Usuário</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 			</div>
 
-			{/* ───── Campos de Motorista ───── */}
-			{isDriver && (
-				<>
-					<Separator />
-					<div className="space-y-4">
-						<p className="text-sm font-medium text-foreground">
-							Dados do motorista
-						</p>
-
-						<div className="grid grid-cols-3 gap-2">
-							<div className="space-y-1 col-span-2">
-								<Label htmlFor="license">Número da CNH</Label>
-								<Input
-									id="license"
-									placeholder="Número da CNH"
-									value={driverForm.license}
-									onChange={(e) =>
-										handleDriverChange("license", e.target.value)
-									}
-									disabled={loading}
-									required={isDriver}
-								/>
-							</div>
-
-							<div className="space-y-1">
-								<Label htmlFor="license-type">Categoria</Label>
-								<Select
-									value={driverForm.type}
-									onValueChange={(v) => handleDriverChange("type", v)}
-									disabled={loading}
-								>
-									<SelectTrigger id="license-type" className="w-full">
-										<SelectValue placeholder="Categoria" />
-									</SelectTrigger>
-									<SelectContent>
-										{USER_LICENSE_TYPES.map((t) => (
-											<SelectItem key={t} value={t}>
-												{t}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-
-						<div className="grid grid-cols-2 gap-4 items-end">
-							<div className="space-y-1">
-								<Label htmlFor="validity">Validade da CNH</Label>
-								<Input
-									id="validity"
-									type="date"
-									value={
-										driverForm.validity
-											? new Date(driverForm.validity)
-													.toISOString()
-													.substring(0, 10)
-											: ""
-									}
-									onChange={(e) =>
-										handleDriverChange(
-											"validity",
-											e.target.value ? new Date(e.target.value) : null,
-										)
-									}
-									disabled={loading}
-								/>
-							</div>
-
-							<div className="flex items-center gap-2 pb-2">
-								<Checkbox
-									id="ear"
-									checked={driverForm.ear ?? false}
-									onCheckedChange={(checked) =>
-										handleDriverChange("ear", checked === true)
-									}
-									disabled={loading}
-								/>
-								<Label htmlFor="ear" className="cursor-pointer">
-									Possui EAR
-									<span className="ml-1 text-xs text-muted-foreground">
-										(Exercício de Atividade Remunerada)
-									</span>
-								</Label>
-							</div>
-						</div>
-					</div>
-				</>
-			)}
-
-			{/* Senha */}
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<div className="space-y-1">
 					<Label htmlFor="password">Senha</Label>
@@ -322,7 +209,6 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 				</div>
 			</div>
 
-			{/* Ações */}
 			<div className="flex justify-between items-center">
 				{isEdit && (
 					<AlertDialog>
