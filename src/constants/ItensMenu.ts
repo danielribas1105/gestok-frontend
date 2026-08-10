@@ -1,4 +1,5 @@
 import {
+	Contact,
 	Cookie,
 	FileText,
 	IdCard,
@@ -35,6 +36,11 @@ export const itemsMenu = [
 		title: "Veículos",
 		url: "/cars",
 		icon: Van,
+	},
+	{
+		title: "Vendedores",
+		url: "/cars",
+		icon: Contact,
 	},
 	{
 		title: "Motoristas",

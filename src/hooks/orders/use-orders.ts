@@ -3,97 +3,12 @@
 import { routes } from "@/config/routes"
 import { clientApi } from "@/lib/api/client"
 import { Order } from "@/schemas/Order"
-import { Product } from "@/schemas/Product"
+import {
+	FlattenedOrdersResult,
+	OrderItemRow,
+	OrdersResponse,
+} from "@/types/Orders"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-
-export interface OrderItem {
-	id: string
-	order_id: string
-	product_id: string
-	quantity: number
-	unit_value: number
-	total_value: number
-	product?: Product
-}
-
-export interface OrdersResponse {
-	orders: Order[]
-	total: number
-	page: number
-	page_size: number
-	total_pages: number
-}
-
-export interface OrderCreateItem {
-	product_id: string
-	quantity: number
-	unit_value: number
-}
-
-export interface OrderCreatePayload {
-	cod_order: number
-	client_id: string
-	order_type: "BONIFICACAO" | "DEGUSTACAO" | "VENDA"
-	observations?: string
-	items: OrderCreateItem[]
-}
-
-export interface OrderProcessResponse {
-	success: boolean
-	message: string
-	order: Order
-	movements_created: number
-}
-
-// Flattened Order Item Row - cada linha representa um item de pedido
-export interface OrderItemRow {
-	order_id: string
-	cod_order: number
-	order_type: "BONIFICACAO" | "DEGUSTACAO" | "VENDA"
-	order_type_label: string
-	order_date: string
-	order_date_formatted: string
-	processed_date?: string
-	processed_date_formatted?: string
-	status: "PENDENTE" | "PROCESSADO" | "CANCELADO"
-	status_label: string
-	observations?: string
-
-	client_id: string
-	client_name: string
-	client_code: string
-	client_cpf_cnpj?: string
-	client_phone?: string
-	client_email?: string
-
-	user_id: string
-	user_name: string
-	user_email: string
-
-	item_id: string
-	product_id: string
-	product_code: string
-	product_name: string
-	product_unit: string
-	quantity: number
-	unit_value: number
-	item_total_value: number
-
-	total_order_items: number
-	total_order_value: number
-
-	raw_order: Order
-	raw_item: OrderItem
-}
-
-interface FlattenedOrdersResult {
-	rows: OrderItemRow[]
-	total: number
-	page: number
-	page_size: number
-	total_pages: number
-	total_rows: number
-}
 
 export const useOrders = (
 	page: number = 1,

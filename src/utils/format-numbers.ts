@@ -11,3 +11,9 @@ export function formatCurrencyBR(value: number) {
 		currency: "BRL",
 	}).format(value)
 }
+
+export function parseNumberBR(value: unknown): number {
+	if (value === null || value === undefined || value === "") return NaN
+	if (typeof value === "number") return value
+	return Number(String(value).replace(/\./g, "").replace(",", "."))
+}

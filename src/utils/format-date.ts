@@ -2,6 +2,35 @@ export function formatDate(date: string | Date) {
 	return new Intl.DateTimeFormat("pt-BR").format(new Date(date))
 }
 
+// Converte data no formato 6/30/26 para 30/06/2026
+export function converterDataParaBR(dataStr: string): Date {
+	const [mes, dia, ano] = dataStr.split("/").map(Number)
+
+	if (!mes || !dia || !ano) {
+		throw new Error(`Data inválida: "${dataStr}"`)
+	}
+
+	// normaliza ano de 2 dígitos (26 -> 2026)
+	const anoCompleto = ano < 100 ? 2000 + ano : ano
+
+	const data = new Date(anoCompleto, mes - 1, dia)
+
+	// valida se a data existe de fato (ex: 13/32/26 não vira uma data válida)
+	if (
+		data.getFullYear() !== anoCompleto ||
+		data.getMonth() !== mes - 1 ||
+		data.getDate() !== dia
+	) {
+		throw new Error(`Data inválida: "${dataStr}"`)
+	}
+
+	const diaBR = String(dia).padStart(2, "0")
+	const mesBR = String(mes).padStart(2, "0")
+
+	//return `${diaBR}/${mesBR}/${anoCompleto}`
+	return data
+}
+
 export function formatDataInput(raw: string) {
 	const digits = raw.replace(/\D/g, "").slice(0, 6) // dd mm aa -> 6 dígitos
 	if (digits.length > 4) {

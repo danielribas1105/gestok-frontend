@@ -1,5 +1,3 @@
-import { create } from "domain"
-
 export const routes = {
 	home: "/",
 	login: "/login",
@@ -47,6 +45,7 @@ export const routes = {
 	orders: {
 		list: "/orders",
 		create: "/orders",
+		createBatch: "/orders/batch",
 		update: (id: string) => `/orders/${id}`,
 		delete: (id: string) => `/orders/${id}`,
 	},

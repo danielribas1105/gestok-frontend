@@ -1,15 +1,15 @@
-import { OrderCreateItem, OrderCreatePayload } from "@/hooks/orders/use-orders"
+import { Order } from "@/schemas/Order"
+import { OrderItem } from "@/schemas/OrderItem"
+import { OrderCreateItemPaylod, OrderCreatePayload } from "@/types/Order"
+import {
+	generateNameCode,
+	normalizeText,
+	validateFileHeaders,
+} from "@/utils/data-file-validation"
+import { converterDataParaBR } from "@/utils/format-date"
+import { parseNumberBR } from "@/utils/format-numbers"
 
-export const REQUIRED_COLUMNS = [
-	"COD PEDIDO",
-	"COD. CLIENTE",
-	"TIPO PEDIDO",
-	"PRODUTO",
-	"QUANTIDADE",
-	"VALOR UNITARIO",
-] as const
-
-export type RequiredColumn = (typeof REQUIRED_COLUMNS)[number]
+/* export type RequiredColumn = (typeof REQUIRED_COLUMNS)[number] */
 
 export interface ValidationResult {
 	valid: boolean
@@ -20,20 +20,6 @@ export interface ValidationResult {
 export interface RowError {
 	row: number // índice da linha (1-based, considerando cabeçalho)
 	errors: string[]
-}
-
-// mesma normalização que você já usa no transformHeader do CSV
-export function normalizeHeader(header: string): string {
-	return header
-		.trim()
-		.replace(/\uFEFF/g, "")
-		.replace(/\./g, "")
-		.toUpperCase()
-}
-
-export function validateHeaders(headers: string[]): string[] {
-	const normalized = headers.map(normalizeHeader)
-	return REQUIRED_COLUMNS.filter((required) => !normalized.includes(required))
 }
 
 export function validateRows(rows: Record<string, any>[]): RowError[] {
@@ -76,7 +62,7 @@ export function validateFile(
 	headers: string[],
 	rows: Record<string, any>[],
 ): ValidationResult {
-	const missingColumns = validateHeaders(headers)
+	const missingColumns = validateFileHeaders(headers)
 	// se faltar coluna, nem vale a pena validar linha por linha
 	const rowErrors = missingColumns.length === 0 ? validateRows(rows) : []
 
@@ -94,7 +80,19 @@ export interface ClientRef {
 
 export interface ProductRef {
 	id: string
+	// planilha não traz código de produto, só a descrição —
+	// então o "cod_product" aqui é a descrição normalizada
 	cod_product: string
+}
+
+export interface StoreRef {
+	id: string
+	cod_store: string // LOJA
+}
+
+export interface PersonRef {
+	id: string
+	cod: string // código de SUPERVISOR / GERENTE
 }
 
 export interface GroupResult {
@@ -102,104 +100,142 @@ export interface GroupResult {
 	errors: string[]
 }
 
+// TIPO DE OPERAÇÃO (planilha, pt-BR) -> operation_type (schema)
+const OPERATION_TYPE_MAP: Record<string, Order["operation_type"]> = {
+	VENDA: "sale",
+	DEGUSTACAO: "tasting",
+	BONIFICACAO: "bonus",
+}
+
+function buildRefMap<T extends { id: string }>(
+	list: T[],
+	getCode: (item: T) => string,
+): Map<string, string> {
+	return new Map(list.map((item) => [normalizeText(getCode(item)), item.id]))
+}
+
 export function groupRowsIntoOrders(
 	rows: Record<string, any>[],
 	clients: ClientRef[],
 	products: ProductRef[],
+	stores: StoreRef[] = [],
+	supervisors: PersonRef[] = [],
+	managers: PersonRef[] = [],
 ): GroupResult {
-	const clientMap = new Map(clients.map((c) => [String(c.cod_client), c.id]))
-	const productMap = new Map(products.map((p) => [String(p.cod_product), p.id]))
+	const clientMap = buildRefMap(clients, (c) => c.cod_client)
+	const productMap = buildRefMap(products, (p) => p.cod_product)
+	const storeMap = buildRefMap(stores, (s) => s.cod_store)
+	const supervisorMap = buildRefMap(supervisors, (s) => s.cod)
+	const managerMap = buildRefMap(managers, (m) => m.cod)
 
 	const errors: string[] = []
 
-	// order_id (código da planilha) -> dados acumulados
+	// código do pedido (planilha) -> payload em construção
 	const ordersMap = new Map<
 		string,
-		{
-			cod_order: number
-			client_id: string
-			client_cod: string // guardado só para mensagens de erro
-			order_type: OrderCreatePayload["order_type"]
-			observations?: string
-			items: OrderCreateItem[]
-		}
+		Omit<OrderCreatePayload, "items"> & { items: OrderCreateItemPaylod[] }
 	>()
 
 	rows.forEach((row, index) => {
-		const rowNumber = index + 2 // header + 1-based
-		const codOrder = String(row["COD PEDIDO"])
-		const codClient = String(row["COD. CLIENTE"])
-		const codProduct = String(row["COD PRODUTO"])
-		const orderType = String(
-			row["TIPO PEDIDO"],
-		).toUpperCase() as OrderCreatePayload["order_type"]
+		const rowNumber = index + 3 // linha de título + cabeçalho + 1-based
 
-		const clientId = clientMap.get(codClient)
-		const productId = productMap.get(codProduct)
+		const codOrder = String(row["pedido"] ?? "").trim()
+		const codBranch = String(row["filial"] ?? "").trim()
+		const codClient = row["cod_cliente"]
+		const productDesc = generateNameCode(row["produto"])
+		const operationRaw = normalizeText(row["tipo_de_operacao"])
+		const quantity = parseNumberBR(row["quantidade"])
+		const totalPrice = parseNumberBR(row["valor"])
+		const itemValue = row["item"]
+		const rowValue = parseNumberBR(row["valor"])
 
+		/* if (!codOrder) {
+			errors.push(`Linha ${rowNumber}: PEDIDO ausente`)
+			return
+		} */
+
+		const operationType = OPERATION_TYPE_MAP[operationRaw]
+		/* if (!operationType) {
+			errors.push(
+				`Linha ${rowNumber}: pedido ${codOrder} - TIPO DE OPERAÇÃO inválido: "${row["tipo_de_operacao"]}"`,
+			)
+			return
+		} */
+
+		/* const clientId = clientMap.get(normalizeText(codClient))
 		if (!clientId) {
 			errors.push(
-				`Linha ${rowNumber}: cliente com código "${codClient}" não encontrado`,
+				`Linha ${rowNumber}: pedido ${codOrder} - cliente com código "${codClient}" não encontrado`,
 			)
 			return
 		}
+
+		const productId = productMap.get(normalizeText(productDesc))
 		if (!productId) {
 			errors.push(
-				`Linha ${rowNumber}: produto com código "${codProduct}" não encontrado`,
+				`Linha ${rowNumber}: pedido ${codOrder} - produto "${productDesc}" não encontrado`,
 			)
 			return
-		}
+		} */
 
-		const quantity = Number(row["QUANTIDADE"])
-		const unitValue = Number(String(row["VALOR UNITARIO"]).replace(",", "."))
+		/* if (isNaN(quantity) || quantity <= 0) {
+			errors.push(
+				`Linha ${rowNumber}: pedido ${codOrder} - QUANTIDADE inválida: "${row["quantidade"]}"`,
+			)
+			return
+		} */
 
-		const item: OrderCreateItem = {
-			product_id: productId,
+		/* if (isNaN(rowValue) || rowValue < 0) {
+			errors.push(
+				`Linha ${rowNumber}: pedido ${codOrder} - VALOR inválido: "${row["valor"]}"`,
+			)
+			return
+		} */
+
+		const storeId = String(row["loja"]).trim()
+		const sallerId = String(row["rota"]).trim()
+		const supervisorId = String(row["supervisor"]).trim()
+		const managerId = String(row["gerente"]).trim()
+
+		const item: OrderItem = {
+			order_id: codOrder,
+			product_id: productDesc,
 			quantity,
-			unit_value: unitValue,
+			total_price: totalPrice,
+			item_number: itemValue,
+			row_hash: "",
 		}
 
 		const existing = ordersMap.get(codOrder)
 
 		if (!existing) {
 			ordersMap.set(codOrder, {
-				cod_order: Number(codOrder),
-				client_id: clientId,
-				client_cod: codClient,
-				order_type: orderType,
-				observations: row["OBSERVACOES"] || undefined,
+				branch_code: codBranch,
+				code: codOrder,
+				issued_at: converterDataParaBR(row["emissao_pedido"]) ?? null,
+				operation_type: operationType,
+				release_reason: row["motivo_de_liberacao"]?.trim?.() || null,
+				released_at: row["dt_liberacao"] ?? null,
+				client_id: codClient, //clientId
+				store_id: storeId ?? "",
+				saller_id: sallerId ?? "",
+				supervisor_id: supervisorId ?? "",
+				manager_id: managerId ?? "",
+				observations: null,
 				items: [item],
-			})
+			} as any)
 			return
 		}
 
-		// --- validação de consistência dentro do mesmo pedido ---
-		if (existing.client_id !== clientId) {
-			errors.push(
-				`Linha ${rowNumber}: pedido ${codOrder} já está associado ao cliente "${existing.client_cod}", mas esta linha traz "${codClient}"`,
-			)
-			return
-		}
-
-		if (existing.order_type !== orderType) {
-			errors.push(
-				`Linha ${rowNumber}: pedido ${codOrder} já está com tipo "${existing.order_type}", mas esta linha traz "${orderType}"`,
-			)
-			return
-		}
-
-		// mesmo produto repetido no mesmo pedido? soma quantidade em vez de duplicar item
-		const existingItem = existing.items.find((i) => i.product_id === productId)
+		// mesmo produto repetido no mesmo pedido -> soma quantidade
+		/* const existingItem = existing.items.find((i) => i.product_id === productId)
 		if (existingItem) {
 			existingItem.quantity += quantity
 		} else {
 			existing.items.push(item)
-		}
+		} */
 	})
 
-	const payloads: OrderCreatePayload[] = Array.from(ordersMap.values()).map(
-		({ client_cod, ...payload }) => payload,
-	)
-
-	return { payloads, errors }
+	const payloads = Array.from(ordersMap.values())
+	return { payloads: payloads as OrderCreatePayload[], errors }
 }
