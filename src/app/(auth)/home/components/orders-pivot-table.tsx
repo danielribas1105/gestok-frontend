@@ -44,7 +44,6 @@ export function OrdersPivotTable() {
 		allProducts,
 		pagination,
 		isLoading,
-		isLoadingProducts,
 		isError,
 		error,
 		refreshOrders,
@@ -108,12 +107,12 @@ export function OrdersPivotTable() {
 		document.body.removeChild(link)
 	}
 
-	if (isLoading || isLoadingProducts) {
+	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-10">
 				<RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
 				<p className="ml-2 text-muted-foreground">
-					Carregando {isLoadingProducts ? "produtos" : "pedidos"}...
+					Carregando {isLoading ? "produtos" : "pedidos"}...
 				</p>
 			</div>
 		)
