@@ -38,8 +38,8 @@ export const itemsMenu = [
 		icon: Van,
 	},
 	{
-		title: "Vendedores",
-		url: "/cars",
+		title: "Comercial",
+		url: "/salesperson",
 		icon: Contact,
 	},
 	{

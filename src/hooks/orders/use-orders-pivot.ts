@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { useProducts } from "../products/use-products"
 import { useOrders } from "./use-orders"
+import { Order } from "@/schemas/Order"
 
 // Estrutura pivotada: 1 pedido por linha, produtos como colunas
 export interface PivotedOrderRow {

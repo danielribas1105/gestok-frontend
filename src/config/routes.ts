@@ -1,14 +1,6 @@
 export const routes = {
 	home: "/",
 	login: "/login",
-	users: {
-		list: "/users",
-		create: "/users",
-		update: (id: string) => `/users/${id}`,
-		delete: (id: string) => `/users/${id}`,
-		getById: (id: string) => `/users/${id}`,
-		getDriverList: "/users/driver-list",
-	},
 	cars: {
 		list: "/cars",
 		create: "/cars",
@@ -30,12 +22,6 @@ export const routes = {
 		delete: (id: string) => `/drivers/${id}`,
 		getById: (id: string) => `/drivers/${id}`,
 	},
-	works: {
-		list: "/works",
-		create: "/works",
-		update: (id: string) => `/works/${id}`,
-		delete: (id: string) => `/works/${id}`,
-	},
 	jobs: {
 		list: "/jobs",
 		create: "/jobs",
@@ -49,11 +35,11 @@ export const routes = {
 		update: (id: string) => `/orders/${id}`,
 		delete: (id: string) => `/orders/${id}`,
 	},
-	statements: {
-		list: "/statements",
-		create: "/statements",
-		update: (id: string) => `/statements/${id}`,
-		delete: (id: string) => `/statements/${id}`,
+	payments: {
+		list: "/payments",
+		create: "/payments",
+		update: (id: string) => `/payments/${id}`,
+		delete: (id: string) => `/payments/${id}`,
 	},
 	products: {
 		list: "/products",
@@ -61,10 +47,19 @@ export const routes = {
 		update: (id: string) => `/products/${id}`,
 		delete: (id: string) => `/products/${id}`,
 	},
-	payments: {
-		list: "/payments",
-		create: "/payments",
-		update: (id: string) => `/payments/${id}`,
-		delete: (id: string) => `/payments/${id}`,
+	salesperson: {
+		list: "/salesperson",
+		create: "/salesperson",
+		update: (id: string) => `/salesperson/${id}`,
+		delete: (id: string) => `/salesperson/${id}`,
+		getById: (id: string) => `/salesperson/${id}`,
+	},
+	users: {
+		list: "/users",
+		create: "/users",
+		update: (id: string) => `/users/${id}`,
+		delete: (id: string) => `/users/${id}`,
+		getById: (id: string) => `/users/${id}`,
+		getDriverList: "/users/driver-list",
 	},
 }
