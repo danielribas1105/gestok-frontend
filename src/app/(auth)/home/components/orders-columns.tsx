@@ -58,12 +58,6 @@ export const ordersColumns: ColumnDef<OrderItemRow>[] = [
 		aggregatedCell: (info) => Number(info.getValue()).toLocaleString("pt-BR"),
 	},
 	{
-		accessorKey: "unit_value",
-		header: "Valor Unit.",
-		enableGrouping: false,
-		cell: (info) => formatCurrency(Number(info.getValue())),
-	},
-	{
 		accessorKey: "item_total_value",
 		header: "Valor Total",
 		aggregationFn: "sum",
