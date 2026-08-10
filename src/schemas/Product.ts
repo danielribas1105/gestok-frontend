@@ -3,7 +3,8 @@ import z from "zod"
 export const ProductSchema = z.object({
 	id: z.uuid(),
 	code: z.string(),
-	description: z
+	name_code: z.string(),
+	name: z
 		.string()
 		.min(3, "A descrição deve ter pelo menos 3 caracteres")
 		.nullable()

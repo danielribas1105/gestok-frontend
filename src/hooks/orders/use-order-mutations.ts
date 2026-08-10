@@ -2,18 +2,34 @@
 
 import { routes } from "@/config/routes"
 import { clientApi } from "@/lib/api/client"
-import { OrderCreatePayload, OrderProcessResponse } from "./use-orders"
 import { Order } from "@/schemas/Order"
+import { OrderCreatePayload } from "@/types/Order"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 export function useOrderMutations() {
 	const queryClient = useQueryClient()
 
+	// CREATE ORDERS BATCH
+	const createOrdersBatch = useMutation({
+		mutationFn: (orders: OrderCreatePayload[]) =>
+			clientApi(routes.orders.createBatch, {
+				method: "POST",
+				body: JSON.stringify({ orders }),
+			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["orders"] })
+			toast.success("Pedidos importados com sucesso 🎉")
+		},
+		onError: (error: any) => {
+			toast.error(error.message || "Erro ao importar pedidos")
+		},
+	})
+
 	// CREATE
 	const createOrder = useMutation({
-		mutationFn: (data: OrderCreatePayload) =>
-			clientApi<Order>(routes.orders.create, {
+		mutationFn: (data: Partial<OrderCreatePayload>) =>
+			clientApi(routes.orders.create, {
 				method: "POST",
 				body: JSON.stringify(data),
 			}),
@@ -35,14 +51,8 @@ export function useOrderMutations() {
 
 	// UPDATE
 	const updateOrder = useMutation({
-		mutationFn: ({
-			id,
-			data,
-		}: {
-			id: string
-			data: Partial<OrderCreatePayload>
-		}) =>
-			clientApi<Order>(routes.orders.update(id), {
+		mutationFn: ({ id, data }: { id: string; data: Partial<Order> }) =>
+			clientApi(routes.orders.update(id), {
 				method: "PUT",
 				body: JSON.stringify(data),
 			}),
@@ -63,7 +73,7 @@ export function useOrderMutations() {
 	})
 
 	// PROCESS
-	const processOrder = useMutation({
+	/* const processOrder = useMutation({
 		mutationFn: (id: string) =>
 			clientApi<OrderProcessResponse>(routes.orders.process(id), {
 				method: "POST",
@@ -82,7 +92,7 @@ export function useOrderMutations() {
 
 			toast.error(error.message || "Erro ao processar pedido")
 		},
-	})
+	}) */
 
 	// DELETE
 	const deleteOrder = useMutation({
@@ -107,9 +117,9 @@ export function useOrderMutations() {
 	})
 
 	return {
+		createOrdersBatch,
 		createOrder,
 		updateOrder,
-		processOrder,
 		deleteOrder,
 	}
 }

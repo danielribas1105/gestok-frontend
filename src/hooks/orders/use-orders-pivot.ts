@@ -69,7 +69,7 @@ export const useOrdersPivot = (
 			.map((product) => ({
 				id: product.id || "",
 				code: product.code,
-				name: product.description,
+				name: product.name || "",
 				unit: product.unit,
 			}))
 			.sort((a, b) => a.name.localeCompare(b.name))

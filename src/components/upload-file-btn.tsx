@@ -1,28 +1,22 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Plus, Loader2 } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
-import { useState } from "react"
-import { UploadFileModal } from "./upload-file-modal"
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogFooter,
 } from "@/components/ui/dialog"
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table"
-import { toast } from "sonner"
-import { OrderCreatePayload } from "@/hooks/orders/use-orders"
 import { useOrderMutations } from "@/hooks/orders/use-order-mutations"
+import { Order } from "@/schemas/Order"
+import { Loader2, Plus } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 import CSVDataTable from "./csv-data-table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { UploadFileModal } from "./upload-file-modal"
+import { OrderCreatePayload } from "@/types/Order"
 
 export default function UploadFileButton() {
 	const [open, setOpen] = useState(false)
@@ -35,7 +29,7 @@ export default function UploadFileButton() {
 		columns: string[]
 	}>({ data: [], columns: [] })
 
-	const { createOrder } = useOrderMutations()
+	const { createOrdersBatch, createOrder } = useOrderMutations()
 
 	function handleOrdersReady(
 		payloads: OrderCreatePayload[],
@@ -50,9 +44,23 @@ export default function UploadFileButton() {
 
 	async function handleConfirmImport() {
 		setImporting(true)
+		try {
+			await createOrdersBatch.mutateAsync(pendingOrders)
+		} catch (err) {
+			// tratar erro parcial se o backend retornar quais pedidos falharam
+		} finally {
+			setImporting(false)
+			setPreviewOpen(false)
+			setPendingOrders([])
+			setTableData({ data: [], columns: [] })
+		}
+	}
+
+	/* async function handleConfirmImport() {
+		setImporting(true)
 		let success = 0
 		let failed = 0
-		const failedOrders: number[] = []
+		const failedOrders: string[] = []
 
 		for (const payload of pendingOrders) {
 			try {
@@ -60,7 +68,7 @@ export default function UploadFileButton() {
 				success++
 			} catch {
 				failed++
-				failedOrders.push(payload.cod_order)
+				failedOrders.push(payload.code)
 			}
 		}
 
@@ -76,14 +84,14 @@ export default function UploadFileButton() {
 				`${success} importado(s), ${failed} falharam (pedidos: ${failedOrders.join(", ")})`,
 			)
 		}
-	}
+	} */
 
-	const totalItems = pendingOrders.reduce((sum, o) => sum + o.items.length, 0)
+	/* const totalItems = pendingOrders.reduce((sum, o) => sum + o.items.length, 0)
 	const totalValue = pendingOrders.reduce(
 		(sum, o) =>
 			sum + o.items.reduce((s, i) => s + i.quantity * i.unit_value, 0),
 		0,
-	)
+	) */
 
 	return (
 		<>
@@ -94,7 +102,7 @@ export default function UploadFileButton() {
 						Carregar arquivo
 					</Button>
 				</TooltipTrigger>
-				<TooltipContent>Adicionar novo arquivo</TooltipContent>
+				<TooltipContent>Fazer upload do arquivo de pedidos</TooltipContent>
 			</Tooltip>
 
 			<UploadFileModal
@@ -104,16 +112,28 @@ export default function UploadFileButton() {
 			/>
 
 			<Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-				<DialogContent className="max-w-5xl max-h-[85vh] overflow-auto">
+				<DialogContent
+					style={{
+						width: "30vw",
+						maxWidth: "40vw",
+					}}
+					className="max-w-5xl max-h-[85vh] overflow-auto"
+				>
 					<DialogHeader>
-						<DialogTitle>
-							Confirmar importação — {pendingOrders.length} pedido(s) /{" "}
-							{tableData.data.length} linha(s)
-						</DialogTitle>
+						<DialogTitle>Confirmar importação?</DialogTitle>
 					</DialogHeader>
-
+					<DialogDescription>
+						<div className="flex flex-col gap-2">
+							<p>
+								<strong>{pendingOrders.length}</strong> pedido(s)
+							</p>
+							<p>
+								<strong>{tableData.data.length}</strong> linha(s) processada(s)
+							</p>
+						</div>
+					</DialogDescription>
 					{/* Reaproveitando o CSVDataTable pra mostrar as linhas cruas */}
-					<CSVDataTable data={tableData.data} columns={tableData.columns} />
+					{/* <CSVDataTable data={tableData.data} columns={tableData.columns} /> */}
 
 					<DialogFooter>
 						<Button
@@ -125,7 +145,7 @@ export default function UploadFileButton() {
 						</Button>
 						<Button onClick={handleConfirmImport} disabled={importing}>
 							{importing && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
-							{importing ? "Importando..." : "Confirmar importação"}
+							{importing ? "Importando..." : "Confirmar"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

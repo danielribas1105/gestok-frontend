@@ -1,5 +1,5 @@
-export const ORDER_TYPE: Record<string, string> = {
-	bonus: "Bonificação",
-	tasting: "Degustação",
-	sale: "Venda",
+export const ORDER_OPERATION_TYPE: Record<string, string> = {
+	bonus: "BONIFICAÇÃO",
+	tasting: "DEGUSTAÇÃO",
+	sale: "VENDA",
 }

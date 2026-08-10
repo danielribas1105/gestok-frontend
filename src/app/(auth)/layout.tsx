@@ -1,13 +1,11 @@
-import { AppSidebar } from "@/components/ui/app-sidebar"
 import PageLayout from "@/components/layout/page-layout"
+import LogoutButton from "@/components/logout-button"
+import { AppSidebar } from "@/components/ui/app-sidebar"
 import {
 	SidebarInset,
 	SidebarProvider,
 	SidebarTrigger,
 } from "@/components/ui/sidebar"
-import AddJobButton from "@/components/add-job-btn"
-import LogoutButton from "@/components/logout-button"
-import AddStatementButton from "@/components/add-statment-btn"
 import UploadFileButton from "@/components/upload-file-btn"
 
 export default function RootLayout({

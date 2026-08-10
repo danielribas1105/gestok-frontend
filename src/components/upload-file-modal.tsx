@@ -5,19 +5,31 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
-import Papa from "papaparse"
-import * as XLSX from "xlsx"
-import { useState } from "react"
-import { Upload } from "lucide-react"
-import {
-	groupRowsIntoOrders,
-	normalizeHeader,
-	validateFile,
-	ValidationResult,
-} from "@/lib/validators/order-import"
-import { OrderCreatePayload } from "@/hooks/orders/use-orders"
-import { useProducts } from "@/hooks/products/use-products"
 import { useClients } from "@/hooks/clients/use-clients"
+import { useProducts } from "@/hooks/products/use-products"
+import { ValidationResult } from "@/lib/validators/order-import"
+import { Order } from "@/schemas/Order"
+import { OrderCreateItemPaylod, OrderCreatePayload } from "@/types/Order"
+import {
+	createHeaderKey,
+	generateNameCode,
+	normalizeHeader,
+	normalizeText,
+	validateFileHeaders,
+} from "@/utils/data-file-validation"
+import { converterDataParaBR } from "@/utils/format-date"
+import { parseNumberBR } from "@/utils/format-numbers"
+import { Upload } from "lucide-react"
+import Papa from "papaparse"
+import { useState } from "react"
+import * as XLSX from "xlsx"
+
+// TIPO DE OPERAÇÃO (planilha, pt-BR) -> operation_type (schema)
+const OPERATION_TYPE_MAP: Record<string, Order["operation_type"]> = {
+	VENDA: "sale",
+	DEGUSTACAO: "tasting",
+	BONIFICACAO: "bonus",
+}
 
 interface UploadFileModalProps {
 	open: boolean
@@ -51,47 +63,64 @@ export function UploadFileModal({
 }: UploadFileModalProps) {
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
-	const { data: products } = useProducts()
-	const { data: clients } = useClients()
 
-	function processRows(headers: string[], rows: Record<string, any>[]) {
-		const validation = validateFile(headers, rows)
+	const processRows = (headers: string[], rows: Record<string, any>[]) => {
+		console.log("header", headers)
+		const errors: string[] = []
+		const ordersMap = new Map<
+			string,
+			Omit<OrderCreatePayload, "items"> & { items: OrderCreateItemPaylod[] }
+		>()
 
-		if (!validation.valid) {
-			if (validation.missingColumns.length > 0) {
-				setError(
-					`Colunas obrigatórias ausentes: ${validation.missingColumns.join(", ")}`,
-				)
-			} else {
-				const first = validation.rowErrors.slice(0, 5)
-				const extra =
-					validation.rowErrors.length > 5
-						? ` (+${validation.rowErrors.length - 5} outras)`
-						: ""
-				setError(
-					first
-						.map((e) => `Linha ${e.row}: ${e.errors.join("; ")}`)
-						.join(" | ") + extra,
-				)
+		rows.forEach((row, index) => {
+			const order_code = String(row["pedido"] ?? "").trim()
+			const product = generateNameCode(row["produto"])
+			const quantity_product = parseNumberBR(row["quantidade"])
+			const releasedAtRaw = row["dt_liberacao"]
+			const releasedAt =
+				typeof releasedAtRaw === "string" && releasedAtRaw.trim() === ""
+					? null
+					: converterDataParaBR(releasedAtRaw)
+			const existing = ordersMap.get(order_code)
+
+			const item: OrderCreateItemPaylod = {
+				code: order_code,
+				product_id: product,
+				quantity: quantity_product,
+				total_price: parseNumberBR(row["valor"]),
+				item_number: String(row["item"]),
 			}
-			setLoading(false)
-			return
-		}
 
-		const clientRefs = (clients || []).map((c) => ({
-			id: c.id!,
-			cod_client: c.code,
-		}))
-		const productRefs = (products || []).map((p) => ({
-			id: p.id!,
-			cod_product: p.code,
-		}))
+			if (!existing) {
+				ordersMap.set(order_code, {
+					code: order_code,
+					branch_code: String(row["filial"] ?? "").trim(),
+					issued_at: converterDataParaBR(row["emissao_pedido"]) ?? null,
+					operation_type:
+						OPERATION_TYPE_MAP[normalizeText(row["tipo_de_operacao"])],
+					release_reason: row["motivo_de_liberacao"]?.trim?.() || null,
+					released_at: releasedAt,
+					client_id: String(row["cod_cliente"]),
+					store_id: String(row["loja"]).trim() ?? "",
+					saller_id: String(row["rota"]).trim() ?? "",
+					supervisor_id: String(row["supervisor"]).trim() ?? "",
+					manager_id: String(row["gerente"]).trim() ?? "",
+					items: [item],
+				} as any)
+				return
+			}
+			// mesmo produto repetido no mesmo pedido -> soma quantidade
+			const existingItem = existing.items.find((i) => i.product_id === product)
+			if (existingItem) {
+				existingItem.quantity += quantity_product
+			} else {
+				existing.items.push(item)
+			}
+		})
 
-		const { payloads, errors } = groupRowsIntoOrders(
-			rows,
-			clientRefs,
-			productRefs,
-		)
+		const payloads = Array.from(ordersMap.values())
+		console.log("payloads", payloads)
+		console.log("errors", errors)
 
 		if (errors.length > 0) {
 			const first = errors.slice(0, 5)
@@ -120,8 +149,27 @@ export function UploadFileModal({
 				header: true,
 				skipEmptyLines: true,
 				transformHeader: normalizeHeader,
+				beforeFirstChunk: (chunk) => {
+					const lines = chunk.split(/\r\n|\n/)
+					lines.shift() // remove a linha de título
+					return lines.join("\n")
+				},
 				complete: (results) => {
-					processRows(results.meta.fields || [], results.data as any[])
+					const rows = results.data as any[]
+
+					if (!results.meta.fields || results.meta.fields.length === 0) {
+						setError("Não foi possível identificar o cabeçalho do arquivo.")
+						setLoading(false)
+						return
+					}
+
+					// valida se sobrou dado após remover título + extrair headers
+					if (rows.length === 0) {
+						setError("O arquivo não contém dados após o título e o cabeçalho.")
+						setLoading(false)
+						return
+					}
+					processRows(results.meta.fields || [], rows)
 				},
 				error: (err) => {
 					setError(`Erro ao processar CSV: ${err.message}`)
@@ -138,25 +186,32 @@ export function UploadFileModal({
 					const rawRows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, {
 						raw: false,
 						defval: null,
+						range: 1, // pula a linha 1 (título) e usa a linha 2 como cabeçalho
 					})
 
 					if (rawRows.length === 0) {
-						setError("O arquivo está vazio.")
+						setError("O arquivo não contém dados após o título e o cabeçalho.")
 						setLoading(false)
 						return
 					}
 
 					const originalHeaders = Object.keys(rawRows[0])
+					//console.log("originalHeaders", originalHeaders)
 					const headerMap = new Map(
-						originalHeaders.map((h) => [h, normalizeHeader(h)]),
+						originalHeaders.map((h) => [h, createHeaderKey(h)]),
 					)
+					//console.log("headerMap", headerMap)
+					const missingColumnsHeader = validateFileHeaders(
+						Array.from(headerMap.values()),
+					)
+					//console.log("validationHeaders", missingColumnsHeader)
 					const normalizedRows = rawRows.map((row) => {
 						const newRow: Record<string, any> = {}
 						for (const [original, normalized] of headerMap)
 							newRow[normalized] = row[original]
 						return newRow
 					})
-
+					//console.log("normalizedRows", normalizedRows)
 					processRows(Array.from(headerMap.values()), normalizedRows)
 				} catch (err: any) {
 					setError(`Erro ao processar Excel: ${err.message}`)
