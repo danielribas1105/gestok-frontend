@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroupItem } from "@/components/ui/radio-group"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
 	Select,
 	SelectContent,
@@ -26,7 +26,6 @@ import { useSalespersonMutations } from "@/hooks/salesperson/use-salesperson-mut
 import { Salesperson } from "@/schemas/Salesperson"
 import { formatDate } from "@/utils/format-date"
 import { formatPhoneInput } from "@/utils/validate-phone"
-import { RadioGroup } from "radix-ui"
 import { useState } from "react"
 
 interface SalespersonFormProps {
@@ -165,7 +164,7 @@ export default function SalespersonForm({
 				</div>
 				<div className="space-y-1">
 					<Label>Status</Label>
-					<RadioGroup.Root
+					<RadioGroup
 						value={form.active ? "true" : "false"}
 						onValueChange={(v) => handleChange("active", v === "true")}
 						disabled={loading}
@@ -183,7 +182,7 @@ export default function SalespersonForm({
 								Inativo
 							</Label>
 						</div>
-					</RadioGroup.Root>
+					</RadioGroup>
 				</div>
 				<div className="space-y-1">
 					<Label htmlFor="created_at">Data de Cadastro</Label>

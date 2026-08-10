@@ -11,12 +11,12 @@ export default function ListProducts() {
 		return <div>Nenhum produto encontrado!</div>
 	}
 
+	console.log("products", products)
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
-			{products &&
-				products.map((product: Product) => (
-					<ProductCard key={product.id} product={product} />
-				))}
+		<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 w-full gap-4">
+			{products.map((product: Product) => (
+				<ProductCard key={product.id} product={product} />
+			))}
 		</div>
 	)
 }

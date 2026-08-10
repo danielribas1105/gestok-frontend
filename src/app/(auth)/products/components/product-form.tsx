@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
 	Select,
 	SelectContent,
@@ -49,10 +50,10 @@ export default function ProductForm({
 	const { createProduct, updateProduct, deleteProduct } = useProductMutations()
 
 	const initialForm = {
-		description: product?.description || "",
+		name_code: product?.name_code || "",
+		name: product?.name || "",
 		code: product?.code || "",
 		unit: product?.unit || "",
-		value: product?.value ? String(product.value).replace(".", ",") : "",
 		active: product?.active ?? true,
 	}
 
@@ -76,11 +77,11 @@ export default function ProductForm({
 		e.preventDefault()
 
 		const payload = {
+			name: form.name,
+			name_code: form.name_code,
 			code: form.code,
-			description: form.description,
 			unit: form.unit,
 			active: form.active,
-			value: parseValueM3(form.value),
 		}
 
 		try {
@@ -116,69 +117,74 @@ export default function ProductForm({
 		<form onSubmit={handleSubmit} className="space-y-5">
 			<div className="grid grid-cols-1 gap-2">
 				<div className="space-y-1">
-					<Label htmlFor="description">Descrição</Label>
+					<Label htmlFor="name-products">Nome</Label>
 					<Input
-						id="description"
+						id="name-products"
 						placeholder="Descrição/nome do produto"
-						value={form.description}
-						onChange={(e) => setForm({ ...form, description: e.target.value })}
-						disabled={loading}
+						value={form.name.toUpperCase()}
+						onChange={(e) =>
+							setForm({ ...form, name: e.target.value.toUpperCase() })
+						}
+						disabled={loading || isEdit}
 					/>
+					<span className="text-xs px-2.5 text-muted-foreground">
+						{form.name_code}
+					</span>
 				</div>
 			</div>
-			<div className="grid grid-cols-4 gap-2">
+			<div className="grid grid-cols-3 gap-2">
 				<div className="space-y-1">
-					<Label htmlFor="code">Código</Label>
+					<Label htmlFor="code-product">Código</Label>
 					<Input
-						id="code"
+						id="code-product"
 						placeholder="Código"
 						value={form.code}
-						onChange={(e) => handleChange("code", e.target.value)}
+						onChange={(e) => handleChange("code", e.target.value.toUpperCase())}
 						disabled={loading}
 						required
 					/>
 				</div>
 				<div className="space-y-1">
-					<Label htmlFor="unit">Unidade</Label>
-					<Input
-						id="unit"
-						placeholder="Unidade (CX, PC, LOTE)"
-						value={form.unit}
-						onChange={(e) => handleChange("unit", e.target.value)}
-						disabled={loading}
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label htmlFor="value">Valor</Label>
-					<Input
-						id="value"
-						placeholder="Valor"
-						value={form.value}
-						onChange={(e) => handleChange("value", e.target.value)}
-						disabled={loading}
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label htmlFor="status">Status *</Label>
+					<Label htmlFor="unit-product">Unidade</Label>
 					<Select
-						value={form.active ? "true" : "false"}
-						onValueChange={(v) => handleChange("active", v === "true")}
+						value={form.unit}
+						onValueChange={(v) => handleChange("unit", v)}
 						disabled={loading}
 					>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Status" />
+						<SelectTrigger id="unit-product" className="w-full">
+							<SelectValue placeholder="Unidade" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="true">Ativo</SelectItem>
-							<SelectItem value="false">Inativo</SelectItem>
+							<SelectItem value="UN">UN</SelectItem>
+							<SelectItem value="CX">CX</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
+				<div className="space-y-1">
+					<Label>Status</Label>
+					<RadioGroup
+						value={form.active ? "true" : "false"}
+						onValueChange={(v) => handleChange("active", v === "true")}
+						disabled={loading}
+						className="flex items-center gap-4 h-9"
+					>
+						<div className="flex items-center gap-2">
+							<RadioGroupItem value="true" id="status-active" />
+							<Label htmlFor="status-active" className="font-normal">
+								Ativo
+							</Label>
+						</div>
+						<div className="flex items-center gap-2">
+							<RadioGroupItem value="false" id="status-inactive" />
+							<Label htmlFor="status-inactive" className="font-normal">
+								Inativo
+							</Label>
+						</div>
+					</RadioGroup>
+				</div>
 			</div>
 
-			{/* Actions */}
 			<div className="flex justify-between items-center">
-				{/* 🔥 DELETE COM MODAL */}
 				{isEdit && (
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
@@ -194,8 +200,7 @@ export default function ProductForm({
 								</AlertDialogTitle>
 								<AlertDialogDescription>
 									Essa ação não pode ser desfeita. Isso irá excluir
-									permanentemente o produto{" "}
-									<strong>{product?.description}</strong>.
+									permanentemente o produto <strong>{product?.name}</strong>.
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 
@@ -213,7 +218,6 @@ export default function ProductForm({
 					</AlertDialog>
 				)}
 
-				{/* SUBMIT OR CANCEL */}
 				<div className="flex items-center gap-2 ml-auto">
 					<Button
 						type="button"
