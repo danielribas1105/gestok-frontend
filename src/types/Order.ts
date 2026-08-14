@@ -11,15 +11,6 @@ export interface OrderItem {
 	product?: Product
 }
 
-export interface OrdersResponse {
-	orders: Order[]
-	total: number
-	page: number
-	page_size: number
-	total_pages: number
-	order_items: OrderItem[]
-}
-
 export interface OrderCreateItemPaylod {
 	code: string
 	product_id: string
@@ -57,29 +48,74 @@ export interface OrderProcessResponse {
 	movements_created: number
 }
 
+export interface OrdersFilters {
+	search?: string
+	dateFrom?: string
+	dateTo?: string
+	status?: string
+	clientId?: string
+}
+
+/**
+ * Formato cru vindo do backend (GET /orders -> list[OrderResponse]),
+ * confirmado contra app/modules/orders/schema.py.
+ *
+ * ATENÇÃO: OrderItemReadNested não expõe `product_id` — é um gap no
+ * schema.py (só existe em OrderItemCreate/OrderItemCreatePayload).
+ * Até isso ser corrigido no backend, não tem como ligar o item ao
+ * produto, então product_name/product_code ficam com um aviso fixo.
+ */
+export interface BackendOrderItem {
+	id: string
+	quantity: number
+	total_price: number
+	item_number?: string | null
+	product_id: string
+	product_name_code?: string | null
+	product_name?: string | null
+	product_code?: string | null
+}
+export interface BackendOrder {
+	id: string
+	branch_code: string
+	code: string
+	operation_type: string
+	status: string
+	client_id: string
+	client_name: string | null
+	store_id: string
+	store_name: string | null
+	saller_id: string
+	saller_name: string | null
+	supervisor_id: string
+	supervisor_name: string | null
+	manager_id: string
+	manager_name: string | null
+	issued_at?: string | null
+	release_reason?: string | null
+	released_at?: string | null
+	created_at?: string | null
+	updated_at?: string | null
+	processed_at?: string | null
+	observations?: string | null
+	items: BackendOrderItem[]
+}
 // Flattened Order Item Row - cada linha representa um item de pedido
 export interface OrderItemRow {
 	order_id: string
 	cod_order: string // era `number` — no schema real, `code` é string
-	order_type: "sale" | "tasting" | "bonus" // valores reais de `operation_type`
-	order_type_label: string
+	operation_type: "sale" | "tasting" | "bonus"
 	order_date?: string // ISO string derivada de `issued_at` (pode ser null no schema)
-	order_date_formatted: string
 	processed_date?: string // derivado de `processed_at`, não `processed_date`
-	processed_date_formatted?: string
 	status:
 		| "pending"
 		| "processed"
 		| "blocked"
 		| "in_transit"
 		| "canceled"
-		| "concluded" // 6 estados reais, não 3
-	status_label: string
+		| "concluded"
 	observations?: string | null
 
-	// TODO: o schema `Order` não tem cliente/vendedor aninhados, só os IDs.
-	// client_name/seller_name usam o próprio ID como fallback até definirmos
-	// a fonte de enriquecimento (hook de clients/sellers ou join no backend).
 	client_id: string
 	client_name: string
 	client_code?: string
@@ -90,13 +126,17 @@ export interface OrderItemRow {
 	saller_id: string
 	seller_name: string
 	supervisor_id: string
+	supervisor_name: string
 	manager_id: string
+	manager_name: string
 
 	item_id: string
 	product_id: string
-	product_code: string
+	product_name_code: string
 	product_name: string
+	product_code: string
 	product_unit: string
+	product_weight: number
 	quantity: number
 	unit_value: number
 	item_total_value: number
@@ -104,8 +144,12 @@ export interface OrderItemRow {
 	total_order_items: number
 	total_order_value: number
 
-	raw_order: Order
-	raw_item: OrderItem
+	store_id: string
+	store_name: string
+	branch_code: string
+	release_reason?: string | null
+	released_at?: string | null
+	created_at?: string | null
 }
 
 export interface FlattenedOrdersResult {

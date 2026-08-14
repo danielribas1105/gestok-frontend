@@ -10,6 +10,7 @@ export const ProductSchema = z.object({
 		.optional(),
 	code: z.string(),
 	unit: z.string().min(2, "Unidade deve ter pelo menos 2 caracteres"),
+	unit_weight: z.number().nullable().optional(),
 	active: z.boolean().optional(),
 	image: z.string().nullable().optional(),
 	created_at: z.coerce.date().nullable().optional(),

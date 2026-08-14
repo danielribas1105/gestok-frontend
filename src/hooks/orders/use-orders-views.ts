@@ -1,10 +1,10 @@
 "use client"
 
+import { OrderItemRow, OrdersFilters } from "@/types/Order"
 import { useMemo } from "react"
-import { OrderItemRow } from "@/types/Order"
-import { OrdersFilters, useOrdersRaw } from "./use-orders-raw"
+import { useOrdersRaw } from "./use-orders-raw"
+
 // Ajuste o path abaixo se o hook de clientes estiver em outro lugar no seu projeto
-import { useClients } from "../clients/use-clients"
 // TODO: saller_id/supervisor_id/manager_id apontam pra tabela `Salesperson`,
 // NÃO pra `User` (são entidades diferentes no backend — ver model.py).
 // useUsers() foi removido daqui porque resolvia o nome errado. Falta um
@@ -13,12 +13,9 @@ import { useClients } from "../clients/use-clients"
 export interface OrderGroupRow {
 	order_id: string
 	cod_order: string
-	order_type: string
-	order_type_label: string
+	operation_type: string
 	order_date?: string
-	order_date_formatted: string
 	status: string
-	status_label: string
 	client_id: string
 	client_name: string
 	saller_id: string
@@ -31,9 +28,11 @@ export interface OrderGroupRow {
 
 export interface ProductGroupRow {
 	product_id: string
-	product_code: string
+	product_name_code: string
 	product_name: string
+	product_code: string
 	product_unit: string
+	product_weight: number
 	total_quantity: number
 	total_value: number
 	order_count: number
@@ -49,39 +48,7 @@ export interface ProductGroupRow {
  */
 export const useOrdersViews = (filters: OrdersFilters = {}) => {
 	const raw = useOrdersRaw(filters)
-	const { data: clients, isLoading: isLoadingClients } = useClients()
-
-	// Mapa client_id -> Client, pra enriquecer as linhas sem precisar
-	// de N+1 requests (uma lista de clientes só, buscada uma vez).
-	const clientsById = useMemo(() => {
-		const map = new Map<string, (typeof clients)[number]>()
-		clients?.forEach((client: any) => map.set(client.id, client))
-		return map
-	}, [clients])
-
-	// View 1: linha a linha — dado bruto, com client_name substituído
-	// pelo valor real. seller_name segue como pendência (mostra o ID)
-	// até existir um hook de Salesperson — ver TODO no topo do arquivo.
-	const flatRows = useMemo<OrderItemRow[]>(() => {
-		if (clientsById.size === 0) return raw.rows
-
-		return raw.rows.map((row) => {
-			const client = clientsById.get(row.client_id)
-			if (!client) return row
-
-			// TODO: confirmar os nomes de campo reais em schemas/Client.ts
-			// (aqui assumindo `name`/`cod_client`/`cpf_cnpj`/`phone`/`email`,
-			// pelo mesmo padrão de nomenclatura do restante do domínio).
-			return {
-				...row,
-				client_name: (client as any)?.name ?? row.client_name,
-				client_code: (client as any)?.cod_client,
-				client_cpf_cnpj: (client as any)?.cpf_cnpj,
-				client_phone: (client as any)?.phone,
-				client_email: (client as any)?.email,
-			}
-		})
-	}, [raw.rows, clientsById])
+	const flatRows = raw.rows
 
 	// View 2: agrupado por pedido
 	const byOrder = useMemo<OrderGroupRow[]>(() => {
@@ -92,12 +59,9 @@ export const useOrdersViews = (filters: OrdersFilters = {}) => {
 				map.set(row.order_id, {
 					order_id: row.order_id,
 					cod_order: row.cod_order,
-					order_type: row.order_type,
-					order_type_label: row.order_type_label,
+					operation_type: row.operation_type,
 					order_date: row.order_date,
-					order_date_formatted: row.order_date_formatted,
 					status: row.status,
-					status_label: row.status_label,
 					client_id: row.client_id,
 					client_name: row.client_name,
 					saller_id: row.saller_id,
@@ -125,9 +89,11 @@ export const useOrdersViews = (filters: OrdersFilters = {}) => {
 			if (!map.has(row.product_id)) {
 				map.set(row.product_id, {
 					product_id: row.product_id,
-					product_code: row.product_code,
+					product_name_code: row.product_name_code,
 					product_name: row.product_name,
+					product_code: row.product_code,
 					product_unit: row.product_unit,
+					product_weight: row.product_weight,
 					total_quantity: 0,
 					total_value: 0,
 					order_count: 0,
@@ -169,7 +135,7 @@ export const useOrdersViews = (filters: OrdersFilters = {}) => {
 
 	return {
 		...raw,
-		isLoading: raw.isLoading || isLoadingClients,
+		isLoading: raw.isLoading,
 		flatRows,
 		byOrder,
 		byProduct,
