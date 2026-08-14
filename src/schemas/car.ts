@@ -20,7 +20,7 @@ export const CarSchema = z.object({
 	km: z.number().int().nonnegative().nullable().optional(),
 	fuel: CarFuelEnum,
 	strength: z.string().nullable().optional(),
-	capacity: z.string().nullable().optional(),
+	capacity: z.number().nullable().optional(),
 	versatility: z.string().nullable().optional(),
 	active: z.boolean().optional(),
 	created_at: z.coerce.date().nullable().optional(),

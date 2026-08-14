@@ -12,6 +12,10 @@ export function formatCurrencyBR(value: number) {
 	}).format(value)
 }
 
+function formatCurrency(value: number) {
+	return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+}
+
 export function parseNumberBR(value: unknown): number {
 	if (value === null || value === undefined || value === "") return NaN
 	if (typeof value === "number") return value

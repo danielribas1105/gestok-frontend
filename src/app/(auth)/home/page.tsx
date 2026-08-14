@@ -108,21 +108,8 @@ export default function HomePage() {
 						: "-"}
 				</div>
 			</div>
-
 			<SummaryWrapper summary={summary} isLoading={isLoadingOrders} />
-
-			<div className="flex flex-col gap-1">
-				<div className="md:hidden flex justify-center">
-					<p className="text-2xl font-semibold">Movimentações</p>
-				</div>
-				<div className="hidden md:flex justify-end">
-					<OrderStatusLegend />
-				</div>
-
-				{/* OrdersExplorer só recebe e exibe os dados; a busca e o
-				    cálculo do summary acontecem uma única vez aqui em cima. */}
-				<OrdersExplorer rows={flatRows} isLoading={isLoadingOrders} />
-			</div>
+			<OrdersExplorer rows={flatRows} isLoading={isLoadingOrders} />
 		</section>
 	)
 }

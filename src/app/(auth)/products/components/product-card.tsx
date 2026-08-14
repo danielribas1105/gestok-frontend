@@ -47,11 +47,16 @@ export default function ProductCard({ product }: ProductCardProps) {
 						</span>
 					</div>
 				</header>
-				<div className="flex flex-col gap-2">
+				<div className="flex gap-10">
 					<LabelCard
 						description="Unidade de medida"
 						label="Unidade"
-						value={product.unit ?? ""}
+						value={product.unit ?? "-"}
+					/>
+					<LabelCard
+						description="Peso bruto do produto"
+						label="Peso"
+						value={product.unit_weight ?? "-"}
 					/>
 				</div>
 				<footer className="flex items-center justify-between gap-10">

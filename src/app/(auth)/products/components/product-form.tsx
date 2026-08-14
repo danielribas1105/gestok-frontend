@@ -23,7 +23,11 @@ import {
 } from "@/components/ui/select"
 import { useProductMutations } from "@/hooks/products/use-product-mutations"
 import { Product } from "@/schemas/Product"
-import { formatCurrencyBR, parseValueM3 } from "@/utils/format-numbers"
+import {
+	formatCurrencyBR,
+	parseNumberBR,
+	parseValueM3,
+} from "@/utils/format-numbers"
 import { useState } from "react"
 
 interface ProductFormProps {
@@ -36,6 +40,7 @@ type ProductFormState = {
 	description: string
 	code: string
 	unit: string
+	unit_weight: number
 	value: number
 	active: boolean
 }
@@ -54,6 +59,7 @@ export default function ProductForm({
 		name: product?.name || "",
 		code: product?.code || "",
 		unit: product?.unit || "",
+		unit_weight: product?.unit_weight || "",
 		active: product?.active ?? true,
 	}
 
@@ -77,11 +83,8 @@ export default function ProductForm({
 		e.preventDefault()
 
 		const payload = {
-			name: form.name,
-			name_code: form.name_code,
-			code: form.code,
-			unit: form.unit,
-			active: form.active,
+			...form,
+			unit_weight: form.unit_weight ? parseNumberBR(form.unit_weight) : null,
 		}
 
 		try {
@@ -115,8 +118,8 @@ export default function ProductForm({
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-5">
-			<div className="grid grid-cols-1 gap-2">
-				<div className="space-y-1">
+			<div className="grid grid-cols-3 gap-2">
+				<div className="col-span-2 space-y-1">
 					<Label htmlFor="name-products">Nome</Label>
 					<Input
 						id="name-products"
@@ -130,6 +133,28 @@ export default function ProductForm({
 					<span className="text-xs px-2.5 text-muted-foreground">
 						{form.name_code}
 					</span>
+				</div>
+				<div className="space-y-1">
+					<Label>Status</Label>
+					<RadioGroup
+						value={form.active ? "true" : "false"}
+						onValueChange={(v) => handleChange("active", v === "true")}
+						disabled={loading}
+						className="flex items-center gap-4 h-9"
+					>
+						<div className="flex items-center gap-2">
+							<RadioGroupItem value="true" id="status-active" />
+							<Label htmlFor="status-active" className="font-normal">
+								Ativo
+							</Label>
+						</div>
+						<div className="flex items-center gap-2">
+							<RadioGroupItem value="false" id="status-inactive" />
+							<Label htmlFor="status-inactive" className="font-normal">
+								Inativo
+							</Label>
+						</div>
+					</RadioGroup>
 				</div>
 			</div>
 			<div className="grid grid-cols-3 gap-2">
@@ -161,26 +186,16 @@ export default function ProductForm({
 					</Select>
 				</div>
 				<div className="space-y-1">
-					<Label>Status</Label>
-					<RadioGroup
-						value={form.active ? "true" : "false"}
-						onValueChange={(v) => handleChange("active", v === "true")}
+					<Label htmlFor="unit-weight">Peso (Kg)</Label>
+					<Input
+						id="unit-weight"
+						placeholder="Peso do produto pela unidade"
+						value={form.unit_weight}
+						onChange={(e) =>
+							handleChange("unit_weight", e.target.value.toUpperCase())
+						}
 						disabled={loading}
-						className="flex items-center gap-4 h-9"
-					>
-						<div className="flex items-center gap-2">
-							<RadioGroupItem value="true" id="status-active" />
-							<Label htmlFor="status-active" className="font-normal">
-								Ativo
-							</Label>
-						</div>
-						<div className="flex items-center gap-2">
-							<RadioGroupItem value="false" id="status-inactive" />
-							<Label htmlFor="status-inactive" className="font-normal">
-								Inativo
-							</Label>
-						</div>
-					</RadioGroup>
+					/>
 				</div>
 			</div>
 

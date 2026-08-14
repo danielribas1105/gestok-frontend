@@ -11,7 +11,6 @@ export default function ListProducts() {
 		return <div>Nenhum produto encontrado!</div>
 	}
 
-	console.log("products", products)
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 w-full gap-4">
 			{products.map((product: Product) => (
