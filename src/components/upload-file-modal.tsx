@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog"
 import { useClients } from "@/hooks/clients/use-clients"
 import { useProducts } from "@/hooks/products/use-products"
+import { calcularPesoPorCaixa } from "@/lib/functions/order"
 import { ValidationResult } from "@/lib/validators/order-import"
 import { Order } from "@/schemas/Order"
 import { OrderCreateItemPaylod, OrderCreatePayload } from "@/types/Order"
@@ -19,7 +20,7 @@ import {
 } from "@/utils/data-file-validation"
 import { converterDataParaBR } from "@/utils/format-date"
 import { parseNumberBR } from "@/utils/format-numbers"
-import { Upload } from "lucide-react"
+import { Slice, Upload } from "lucide-react"
 import Papa from "papaparse"
 import { useState } from "react"
 import * as XLSX from "xlsx"
@@ -66,6 +67,7 @@ export function UploadFileModal({
 
 	const processRows = (headers: string[], rows: Record<string, any>[]) => {
 		console.log("header", headers)
+		console.log("rows", rows)
 		const errors: string[] = []
 		const ordersMap = new Map<
 			string,
@@ -76,6 +78,9 @@ export function UploadFileModal({
 			const order_code = String(row["pedido"] ?? "").trim()
 			const product = generateNameCode(row["produto"])
 			const quantity_product = parseNumberBR(row["quantidade"])
+			const unit_product = String(row["un_medida"] ?? "-")
+			/* const weight_product = calcularPesoPorCaixa(product) */
+			const weight_product = calcularPesoPorCaixa(product, 0.1, false)
 			const releasedAtRaw = row["dt_liberacao"]
 			const releasedAt =
 				typeof releasedAtRaw === "string" && releasedAtRaw.trim() === ""
@@ -87,6 +92,8 @@ export function UploadFileModal({
 				code: order_code,
 				product_id: product,
 				quantity: quantity_product,
+				unit: unit_product,
+				weight: Number(weight_product.toFixed(2)),
 				total_price: parseNumberBR(row["valor"]),
 				item_number: String(row["item"]),
 			}

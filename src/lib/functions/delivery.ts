@@ -7,9 +7,10 @@ export function groupSelectedIntoCargaOrders(
 ): CargoOrder[] {
 	const byOrder = new Map<string | number, CargoOrder>()
 
+	console.log("items", items)
 	for (const item of items) {
 		const key = item.cod_order
-		const weight = (item.product_weight ?? 0) * Number(item.quantity)
+		const weight = item.product_weight ?? 0 * Number(item.quantity)
 		const existing = byOrder.get(key)
 
 		if (existing) {

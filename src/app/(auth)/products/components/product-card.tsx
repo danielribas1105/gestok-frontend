@@ -55,7 +55,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 					/>
 					<LabelCard
 						description="Peso bruto do produto"
-						label="Peso"
+						label="Peso (Kg)"
 						value={product.unit_weight ?? "-"}
 					/>
 				</div>

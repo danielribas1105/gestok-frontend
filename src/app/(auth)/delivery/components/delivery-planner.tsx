@@ -48,18 +48,22 @@ export default function DeliveryPlanner({
 }: DeliveryPlannerProps) {
 	const { data: cars } = useCars()
 	const [cargos, setCargos] = useState<Cargo[]>([newCargo()])
-	const [unassigned, setUnassigned] = useState<CargoOrder[]>([])
+	const [unassignedOrders, setUnassignedOrders] = useState<CargoOrder[]>([])
 
+	console.log("unassignedOrders", unassignedOrders)
+	console.log("cargos", cargos)
 	// re-sincroniza sempre que o dialog abre com a seleção atual
 	useEffect(() => {
 		if (!open) return
 		setCargos([newCargo()])
-		setUnassigned(groupSelectedIntoCargaOrders(selectedItems))
+		setUnassignedOrders(groupSelectedIntoCargaOrders(selectedItems))
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open])
 
 	function assignToCargo(order: CargoOrder, cargaId: string) {
-		setUnassigned((prev) => prev.filter((o) => o.cod_order !== order.cod_order))
+		setUnassignedOrders((prev) =>
+			prev.filter((o) => o.cod_order !== order.cod_order),
+		)
 		setCargos((prev) =>
 			prev.map((c) =>
 				c.id === cargaId ? { ...c, orders: [...c.orders, order] } : c,
@@ -78,7 +82,7 @@ export default function DeliveryPlanner({
 					: c,
 			),
 		)
-		setUnassigned((prev) => [...prev, order])
+		setUnassignedOrders((prev) => [...prev, order])
 	}
 
 	function updateCargo(cargo_id: string, patch: Partial<Cargo>) {
@@ -109,7 +113,7 @@ export default function DeliveryPlanner({
 	function removeCargo(cargo_id: string) {
 		const cargo = cargos.find((c) => c.id === cargo_id)
 		if (!cargo) return
-		setUnassigned((prev) => [...prev, ...cargo.orders])
+		setUnassignedOrders((prev) => [...prev, ...cargo.orders])
 		setCargos((prev) => prev.filter((c) => c.id !== cargo_id))
 	}
 
@@ -117,8 +121,10 @@ export default function DeliveryPlanner({
 	// ou se ainda houver pedido sem cargo
 	const blockingIssues = useMemo(() => {
 		const issues: string[] = []
-		if (unassigned.length > 0) {
-			issues.push(`${unassigned.length} pedido(s) ainda sem carga atribuída`)
+		if (unassignedOrders.length > 0) {
+			issues.push(
+				`${unassignedOrders.length} pedido(s) ainda sem carga atribuída`,
+			)
 		}
 		for (const cargo of cargos) {
 			if (cargo.orders.length === 0) continue
@@ -134,7 +140,7 @@ export default function DeliveryPlanner({
 			}
 		}
 		return issues
-	}, [cargos, unassigned, cars])
+	}, [cargos, unassignedOrders, cars])
 
 	const activeCargos = cargos.filter(
 		(c) => c.orders.length > 0 || cargos.length === 1,
@@ -152,7 +158,7 @@ export default function DeliveryPlanner({
 
 				<DialogDescription className="grid grid-cols-[240px_1fr] gap-6">
 					<UnassignedOrdersList
-						orders={unassigned}
+						orders={unassignedOrders}
 						cargos={cargos}
 						onAssign={assignToCargo}
 					/>

@@ -120,8 +120,8 @@ function flattenOrders(orders: BackendOrder[]): OrderItemRow[] {
 				product_name_code: item.product_name_code ?? "-",
 				product_name: item.product_name ?? "Produto sem nome",
 				product_code: item.product_code ?? "Produto sem código",
-				product_unit: "-",
-				product_weight: 0,
+				product_unit: item.product_unit ?? "-",
+				product_weight: Number(item.product_weight) ?? 0,
 				quantity: item.quantity,
 				unit_value: unitValue,
 
