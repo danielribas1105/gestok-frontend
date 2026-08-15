@@ -15,6 +15,8 @@ export interface OrderCreateItemPaylod {
 	code: string
 	product_id: string
 	quantity: number
+	unit: string
+	weight: number
 	total_price: number
 	item_number: string
 }
@@ -74,6 +76,8 @@ export interface BackendOrderItem {
 	product_name_code?: string | null
 	product_name?: string | null
 	product_code?: string | null
+	product_unit?: string | null
+	product_weight?: string | null
 }
 export interface BackendOrder {
 	id: string

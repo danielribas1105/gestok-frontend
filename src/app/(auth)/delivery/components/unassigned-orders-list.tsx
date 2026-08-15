@@ -15,9 +15,9 @@ export default function UnassignedOrdersList({
 }: UnassignedOrdersListProps) {
 	return (
 		<div className="flex flex-col gap-2">
-			<h3 className="text-sm font-medium text-gray-600">
+			<span className="text-sm font-medium text-gray-600">
 				Pedidos sem carga ({orders.length})
-			</h3>
+			</span>
 			<div className="flex flex-col divide-y border rounded-md max-h-[60vh] overflow-y-auto">
 				{orders.length === 0 && (
 					<div className="text-sm text-gray-400 text-center py-4">
