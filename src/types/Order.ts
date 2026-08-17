@@ -144,6 +144,7 @@ export interface OrderItemRow {
 	quantity: number
 	unit_value: number
 	item_total_value: number
+	item_total_weight: number
 
 	total_order_items: number
 	total_order_value: number

@@ -23,11 +23,7 @@ import {
 } from "@/components/ui/select"
 import { useProductMutations } from "@/hooks/products/use-product-mutations"
 import { Product } from "@/schemas/Product"
-import {
-	formatCurrencyBR,
-	parseNumberBR,
-	parseValueM3,
-} from "@/utils/format-numbers"
+import { parseNumberBR } from "@/utils/format-numbers"
 import { useState } from "react"
 
 interface ProductFormProps {

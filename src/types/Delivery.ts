@@ -23,21 +23,4 @@ export interface Cargo {
 	status: DeliveryStatus
 }
 
-export function cargoTotalWeight(cargo: Cargo): number {
-	return cargo.orders.reduce((sum, o) => sum + o.total_weight_kg, 0)
-}
-
-export function cargoTotalValue(cargo: Cargo): number {
-	return cargo.orders.reduce((sum, o) => sum + o.total_value, 0)
-}
-
 export type CapacityLevel = "ok" | "warning" | "over"
-
-// warning a partir de 90% da capacidade, over acima de 100%
-export function capacityLevel(weight: number, capacity: number): CapacityLevel {
-	if (capacity <= 0) return "ok"
-	const ratio = weight / capacity
-	if (ratio > 1) return "over"
-	if (ratio >= 0.9) return "warning"
-	return "ok"
-}

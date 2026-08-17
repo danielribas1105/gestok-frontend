@@ -1,16 +1,9 @@
 "use client"
 
-import {
-	Cargo,
-	CargoOrder,
-	capacityLevel,
-	cargoTotalWeight,
-	cargoTotalValue,
-} from "@/types/Delivery"
+import { Cargo, CargoOrder } from "@/types/Delivery"
 import { Checkbox } from "@/components/ui/checkbox"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Car } from "@/types/Car"
 import { Label } from "@/components/ui/label"
 import {
 	Select,
@@ -21,6 +14,9 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Car } from "@/schemas/Car"
+import { cargoTotalValue, cargoTotalWeight } from "@/lib/functions/delivery"
+import { CAPACITY_LABELS } from "@/constants/Cars"
 
 interface CargoCardProps {
 	index: number
@@ -43,7 +39,7 @@ export default function CargoCard({
 }: CargoCardProps) {
 	const car = cars?.find((c) => c.id === cargo.car_id)
 	const weight = cargoTotalWeight(cargo)
-	const level = car ? capacityLevel(weight, car.capacity ?? 0) : "ok"
+	//const level = car ? capacityLevel(weight, car.capacity ?? 0) : "ok"
 
 	return (
 		<div className="rounded-lg border p-4 flex flex-col gap-3">
@@ -76,7 +72,7 @@ export default function CargoCard({
 						<SelectContent>
 							{cars?.map((v) => (
 								<SelectItem key={v.id} value={v.id}>
-									{v.plate} — {v.model} ({v.capacity}kg)
+									{v.plate} — {v.model} {/* ({v.capacity}kg) */}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -87,7 +83,7 @@ export default function CargoCard({
 					<Input
 						id="delivery-driver"
 						placeholder="Motorista..."
-						value={car?.driver.name}
+						value={car?.driver?.name}
 						disabled={true}
 					/>
 				</div>
@@ -104,9 +100,21 @@ export default function CargoCard({
 					/>
 				</div>
 			</div>
+			<div className="flex gap-2 text-muted-foreground">
+				Capacidade carga:
+				{car?.capacities.map((c) => (
+					<div key={c.id} className="flex gap-2">
+						<span className="flex gap-0.5">
+							<p>{c.value}</p>
+							<p>{CAPACITY_LABELS[c.unit]}</p>
+						</span>
+						<span>/</span>
+					</div>
+				))}
+			</div>
 
 			{/* barra de capacidade de peso */}
-			{car && (
+			{/* {car && (
 				<div className="flex flex-col gap-1">
 					<div className="flex justify-between text-xs text-gray-500">
 						<span>
@@ -142,7 +150,7 @@ export default function CargoCard({
 						/>
 					</div>
 				</div>
-			)}
+			)} */}
 
 			{/* pedidos atribuídos a essa carga */}
 			<div className="flex flex-col divide-y border rounded-md">

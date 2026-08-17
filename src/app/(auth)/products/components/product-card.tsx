@@ -17,7 +17,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 	return (
 		<>
 			<article
-				className="h-48 border-2 rounded-lg p-3 flex flex-col justify-between gap-2 cursor-pointer hover:border-primary transition-colors"
+				className="h-56 border-2 rounded-lg p-3 flex flex-col justify-between gap-2 cursor-pointer hover:border-primary transition-colors"
 				onClick={() => setOpen(true)}
 				onKeyDown={(e) => e.key === "Enter" && setOpen(true)}
 				role="button"
@@ -47,17 +47,31 @@ export default function ProductCard({ product }: ProductCardProps) {
 						</span>
 					</div>
 				</header>
-				<div className="flex gap-10">
-					<LabelCard
-						description="Unidade de medida"
-						label="Unidade"
-						value={product.unit ?? "-"}
-					/>
-					<LabelCard
-						description="Peso bruto do produto"
-						label="Peso (Kg)"
-						value={product.unit_weight ?? "-"}
-					/>
+				<div className="flex flex-col gap-1">
+					<div className="flex gap-10">
+						<LabelCard
+							description="Unidade de medida"
+							label="Unidade"
+							value={product.unit ?? "-"}
+						/>
+						<LabelCard
+							description="Quantidade de caixas por pallet"
+							label="Caixas por pallet"
+							value={product.boxes_per_pallet ?? "-"}
+						/>
+					</div>
+					<div className="flex gap-10">
+						<LabelCard
+							description="Peso bruto do produto"
+							label="Peso (Kg)"
+							value={product.weight_kg_per_unit ?? "-"}
+						/>
+						<LabelCard
+							description="Volume unitário"
+							label="Volume (m³)"
+							value={product.volume_m3_per_unit ?? "-"}
+						/>
+					</div>
 				</div>
 				<footer className="flex items-center justify-between gap-10">
 					<LabelCard
