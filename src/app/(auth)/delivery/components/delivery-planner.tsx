@@ -11,17 +11,16 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { v4 as uuid } from "uuid"
-import {
-	Cargo,
-	CargoOrder,
-	capacityLevel,
-	cargoTotalWeight,
-} from "@/types/Delivery"
+import { Cargo, CargoOrder } from "@/types/Delivery"
 import CargoCard from "./cargo-card"
 import UnassignedOrdersList from "./unassigned-orders-list"
 import { OrderItemRow } from "@/types/Order"
 import { useCars } from "@/hooks/cars/use-cars"
-import { groupSelectedIntoCargaOrders } from "@/lib/functions/delivery"
+import {
+	capacityLevel,
+	cargoTotalWeight,
+	groupSelectedIntoCargaOrders,
+} from "@/lib/functions/delivery"
 
 interface DeliveryPlannerProps {
 	open: boolean
@@ -52,6 +51,7 @@ export default function DeliveryPlanner({
 
 	console.log("unassignedOrders", unassignedOrders)
 	console.log("cargos", cargos)
+	console.log("cars", cars)
 	// re-sincroniza sempre que o dialog abre com a seleção atual
 	useEffect(() => {
 		if (!open) return
@@ -134,7 +134,7 @@ export default function DeliveryPlanner({
 			const car = cars?.find((c) => c.id === cargo.car_id)
 			if (
 				car &&
-				capacityLevel(cargoTotalWeight(cargo), Number(car.capacity)) === "over"
+				capacityLevel(cargoTotalWeight(cargo), car.capacities) === "over"
 			) {
 				issues.push(`Carga excede a capacidade do veículo ${car.plate}`)
 			}

@@ -4,14 +4,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { clientApi } from "@/lib/api/client"
 import { routes } from "@/config/routes"
 import { toast } from "sonner"
-import { Car } from "@/schemas/Car"
+import { Car, CarCreate, CarUpdate } from "@/schemas/Car"
 
 export function useCarMutations() {
 	const queryClient = useQueryClient()
 
 	// CREATE
 	const createCar = useMutation({
-		mutationFn: (data: Partial<Car>) =>
+		mutationFn: (data: Partial<CarCreate>) =>
 			clientApi(routes.cars.create, {
 				method: "POST",
 				body: JSON.stringify(data),
@@ -34,7 +34,7 @@ export function useCarMutations() {
 
 	// UPDATE
 	const updateCar = useMutation({
-		mutationFn: ({ id, data }: { id: string; data: Partial<Car> }) =>
+		mutationFn: ({ id, data }: { id: string; data: Partial<CarUpdate> }) =>
 			clientApi(routes.cars.update(id), {
 				method: "PUT",
 				body: JSON.stringify(data),

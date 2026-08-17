@@ -124,6 +124,7 @@ function flattenOrders(orders: BackendOrder[]): OrderItemRow[] {
 				product_weight: Number(item.product_weight) ?? 0,
 				quantity: item.quantity,
 				unit_value: unitValue,
+				item_total_weight: Number(item.product_weight) * item.quantity,
 
 				total_order_items: totalOrderItems,
 				total_order_value: totalOrderValue,

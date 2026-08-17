@@ -3,7 +3,7 @@ import { Skeleton } from "./skeleton"
 interface LabelCardProps {
 	description: string
 	label: string
-	value: string | number | undefined
+	value: string | number | Date | undefined
 	position?: string
 	isLoading?: boolean
 }
@@ -23,7 +23,7 @@ export default function LabelCard({
 				{isLoading ? (
 					<Skeleton className="h-6 w-full rounded-md" />
 				) : (
-					<p className="font-semibold">{value}</p>
+					<p className="font-semibold">{value as string}</p>
 				)}
 			</dd>
 		</dl>

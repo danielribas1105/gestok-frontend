@@ -12,8 +12,10 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
 	Select,
 	SelectContent,
@@ -24,6 +26,7 @@ import {
 import { useCarMutations } from "@/hooks/cars/use-car-mutations"
 import { useDrivers } from "@/hooks/drivers/use-drivers"
 import { Car } from "@/schemas/Car"
+import type { CapacityUnit } from "@/schemas/Car"
 import { Camera } from "lucide-react"
 import { useState } from "react"
 
@@ -31,6 +34,41 @@ interface CarFormProps {
 	car?: Car
 	onSuccess?: () => void
 	onCancel?: () => void
+}
+
+// Unidades de capacidade disponíveis — espelha CapacityUnitEnum do schema
+const CAPACITY_UNITS: { value: CapacityUnit; label: string }[] = [
+	{ value: "m3", label: "Volume (m³)" },
+	{ value: "boxes", label: "Caixas" },
+	{ value: "weight_kg", label: "Peso (kg)" },
+	{ value: "pallets", label: "Pallets" },
+]
+
+type CapacityFieldState = {
+	enabled: boolean
+	value: string
+	id?: string // presente quando a capacidade já existe (edição)
+}
+
+type CapacitiesState = Record<CapacityUnit, CapacityFieldState>
+
+function buildInitialCapacities(car?: Car): CapacitiesState {
+	const base = Object.fromEntries(
+		CAPACITY_UNITS.map(({ value }) => [
+			value,
+			{ enabled: false, value: "" } satisfies CapacityFieldState,
+		]),
+	) as CapacitiesState
+
+	car?.capacities?.forEach((cap) => {
+		base[cap.unit] = {
+			enabled: true,
+			value: cap.value.toString(),
+			id: cap.id,
+		}
+	})
+
+	return base
 }
 
 export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
@@ -46,16 +84,41 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 		manufacture: car?.manufacture?.toString() ?? "",
 		km: car?.km?.toString() ?? "",
 		fuel: car?.fuel ?? "diesel",
-		strength: car?.strength ?? "",
-		capacity: car?.capacity ?? "",
-		versatility: car?.versatility ?? "",
 		active: car?.active ?? true,
+		capacities: buildInitialCapacities(car),
 	}
 
 	const [form, setForm] = useState(initialForm)
 
 	function handleChange(field: keyof typeof form, value: string | boolean) {
 		setForm((f) => ({ ...f, [field]: value }))
+	}
+
+	// Habilita/desabilita uma unidade de capacidade
+	function handleCapacityToggle(unit: CapacityUnit, checked: boolean) {
+		setForm((f) => ({
+			...f,
+			capacities: {
+				...f.capacities,
+				[unit]: {
+					...f.capacities[unit],
+					enabled: checked,
+					// limpa o valor ao desmarcar, mantém o id se já existia
+					value: checked ? f.capacities[unit].value : "",
+				},
+			},
+		}))
+	}
+
+	// Atualiza o valor de uma unidade de capacidade
+	function handleCapacityValueChange(unit: CapacityUnit, value: string) {
+		setForm((f) => ({
+			...f,
+			capacities: {
+				...f.capacities,
+				[unit]: { ...f.capacities[unit], value },
+			},
+		}))
 	}
 
 	//  CANCEL
@@ -69,10 +132,19 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 
 		if (!form.driver_id) return // proteção extra, além do required do Select
 
+		const capacities = Object.entries(form.capacities)
+			.filter(([, c]) => c.enabled && c.value !== "")
+			.map(([unit, c]) => ({
+				unit: unit as CapacityUnit,
+				value: parseFloat(c.value),
+				...(c.id ? { id: c.id } : {}),
+			}))
+
 		const payload = {
 			...form,
 			manufacture: form.manufacture ? parseInt(form.manufacture) : null,
 			km: form.km ? parseInt(form.km) : null,
+			capacities,
 		}
 
 		try {
@@ -116,7 +188,7 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
 				<div className="col-span-2 space-y-1">
-					<Label htmlFor="model">Modelo*</Label>
+					<Label htmlFor="model">Modelo *</Label>
 					<Input
 						id="model"
 						placeholder="Modelo"
@@ -126,8 +198,8 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 						required
 					/>
 				</div>
-				<div className="col-span-2 space-y-1">
-					<Label htmlFor="driver">Motorista*</Label>
+				<div className="space-y-1">
+					<Label htmlFor="driver">Motorista *</Label>
 					<Select
 						value={form.driver_id}
 						onValueChange={(v) => handleChange("driver_id", v)}
@@ -151,6 +223,28 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 							))}
 						</SelectContent>
 					</Select>
+				</div>
+				<div className="space-y-1">
+					<Label>Status</Label>
+					<RadioGroup
+						value={form.active ? "true" : "false"}
+						onValueChange={(v) => handleChange("active", v === "true")}
+						disabled={loading}
+						className="flex items-center gap-4 h-9"
+					>
+						<div className="flex items-center gap-2">
+							<RadioGroupItem value="true" id="status-active" />
+							<Label htmlFor="status-active" className="font-normal">
+								Ativo
+							</Label>
+						</div>
+						<div className="flex items-center gap-2">
+							<RadioGroupItem value="false" id="status-inactive" />
+							<Label htmlFor="status-inactive" className="font-normal">
+								Inativo
+							</Label>
+						</div>
+					</RadioGroup>
 				</div>
 			</div>
 
@@ -211,52 +305,43 @@ export default function CarForm({ car, onSuccess, onCancel }: CarFormProps) {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-				<div className="space-y-1">
-					<Label htmlFor="capacity">Capacidade(m3)*</Label>
-					<Input
-						id="capacity"
-						placeholder="Capacidade de carga"
-						value={form.capacity}
-						onChange={(e) => handleChange("capacity", e.target.value)}
-						disabled={loading}
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label htmlFor="strength">Potência</Label>
-					<Input
-						id="strength"
-						placeholder="Potência (ex: 150cv)"
-						value={form.strength}
-						onChange={(e) => handleChange("strength", e.target.value)}
-						disabled={loading}
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label htmlFor="versatility">Versatilidade</Label>
-					<Input
-						id="versatility"
-						placeholder="Versatilidade (ex: SUV, Pickup)"
-						value={form.versatility}
-						onChange={(e) => handleChange("versatility", e.target.value)}
-						disabled={loading}
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label htmlFor="status">Status</Label>
-					<Select
-						value={form.active ? "true" : "false"}
-						onValueChange={(v) => handleChange("active", v === "true")}
-						disabled={loading}
-					>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Status" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="true">Ativo</SelectItem>
-							<SelectItem value="false">Inativo</SelectItem>
-						</SelectContent>
-					</Select>
+			{/* Capacidades de carga — um veículo pode ter várias unidades ao mesmo tempo */}
+			<div className="space-y-2 border-2 rounded-2xl p-3">
+				<Label>Capacidade de carga</Label>
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+					{CAPACITY_UNITS.map(({ value: unit, label }) => {
+						const field = form.capacities[unit]
+						return (
+							<div key={unit} className="space-y-1">
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id={`capacity-${unit}`}
+										checked={field.enabled}
+										onCheckedChange={(checked) =>
+											handleCapacityToggle(unit, checked === true)
+										}
+										disabled={loading}
+									/>
+									<Label htmlFor={`capacity-${unit}`} className="font-normal">
+										{label}
+									</Label>
+								</div>
+								<Input
+									id={`capacity-value-${unit}`}
+									type="number"
+									min={0}
+									step="any"
+									placeholder={label}
+									value={field.value}
+									onChange={(e) =>
+										handleCapacityValueChange(unit, e.target.value)
+									}
+									disabled={loading || !field.enabled}
+									required={field.enabled}
+								/>
+							</div>
+						)
+					})}
 				</div>
 			</div>
 

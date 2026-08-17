@@ -12,8 +12,10 @@ export default function ListCars() {
 	}
 
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-			{cars && cars.map((car: Car) => <CarCard key={car.id} car={car} />)}
+		<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 w-full gap-4">
+			{cars.map((car: Car) => (
+				<CarCard key={car.id} car={car} />
+			))}
 		</div>
 	)
 }
