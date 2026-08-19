@@ -145,8 +145,22 @@ export const ordersColumns: ColumnDef<OrderItemRow>[] = [
 		aggregatedCell: (info) => Number(info.getValue()).toLocaleString("pt-BR"),
 	},
 	{
+		accessorKey: "item_total_volume",
+		header: () => <div className="text-center">Volume</div>,
+		meta: { align: "center", color: "draft" },
+		size: 60,
+		aggregationFn: "sum",
+		cell: ({ row }) => {
+			const volume = Number(row.getValue("item_total_volume")).toLocaleString(
+				"pt-BR",
+			)
+			return <div className="flex justify-center">{volume}</div>
+		},
+		aggregatedCell: (info) => Number(info.getValue()).toLocaleString("pt-BR"),
+	},
+	{
 		accessorKey: "item_total_weight",
-		header: () => <div className="text-center">Peso Total</div>,
+		header: () => <div className="text-center">Peso</div>,
 		meta: { align: "center", color: "draft" },
 		size: 60,
 		aggregationFn: "sum",

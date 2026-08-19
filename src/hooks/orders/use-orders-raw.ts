@@ -88,6 +88,10 @@ function flattenOrders(orders: BackendOrder[]): OrderItemRow[] {
 			0,
 		)
 		const totalOrderItems = items.length
+		const totalQuantityOrder = items.reduce(
+			(sum, item) => sum + item.quantity,
+			0,
+		)
 
 		const issuedAt = order.issued_at ? new Date(order.issued_at) : null
 		const processedAt = order.processed_at ? new Date(order.processed_at) : null
@@ -122,12 +126,16 @@ function flattenOrders(orders: BackendOrder[]): OrderItemRow[] {
 				product_code: item.product_code ?? "Produto sem código",
 				product_unit: item.product_unit ?? "-",
 				product_weight: Number(item.product_weight) ?? 0,
+				product_volume: Number(item.product_volume) ?? 0,
+				product_boxes_pallet: Number(item.product_boxes_pallet) ?? 0,
 				quantity: item.quantity,
 				unit_value: unitValue,
 				item_total_weight: Number(item.product_weight) * item.quantity,
+				item_total_volume: Number(item.product_volume) * item.quantity,
 
 				total_order_items: totalOrderItems,
 				total_order_value: totalOrderValue,
+				total_order_quantity: totalQuantityOrder,
 
 				store_id: order.store_id,
 				store_name: order.store_name ?? "Não cadastrado",

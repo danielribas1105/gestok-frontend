@@ -18,7 +18,9 @@ import { OrderItemRow } from "@/types/Order"
 import { useCars } from "@/hooks/cars/use-cars"
 import {
 	capacityLevel,
+	cargoTotalVolume,
 	cargoTotalWeight,
+	cargoTotalBoxes,
 	groupSelectedIntoCargaOrders,
 } from "@/lib/functions/delivery"
 
@@ -117,7 +119,7 @@ export default function DeliveryPlanner({
 		setCargos((prev) => prev.filter((c) => c.id !== cargo_id))
 	}
 
-	// bloqueia confirmação se alguma cargo estiver sobrepeso, sem veículo/motorista,
+	// bloqueia confirmação se alguma carga estiver sobrepeso, sem veículo/motorista,
 	// ou se ainda houver pedido sem cargo
 	const blockingIssues = useMemo(() => {
 		const issues: string[] = []
@@ -134,7 +136,12 @@ export default function DeliveryPlanner({
 			const car = cars?.find((c) => c.id === cargo.car_id)
 			if (
 				car &&
-				capacityLevel(cargoTotalWeight(cargo), car.capacities) === "over"
+				capacityLevel(
+					cargoTotalWeight(cargo),
+					cargoTotalVolume(cargo),
+					cargoTotalBoxes(cargo),
+					car.capacities,
+				) === "over"
 			) {
 				issues.push(`Carga excede a capacidade do veículo ${car.plate}`)
 			}

@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
-import { converterDataParaBR, formatDate } from "@/utils/format-date"
+import { formatDate } from "@/utils/format-date"
 import { Car } from "@/schemas/Car"
 import LabelCard from "@/components/ui/label-card"
 import CarModal from "./car-modal"
@@ -17,7 +17,7 @@ export default function CarCard({ car }: CarCardProps) {
 	return (
 		<>
 			<article
-				className="h-64 border-2 rounded-lg p-3 flex flex-col justify-between gap-2 cursor-pointer hover:border-primary transition-colors"
+				className="h-72 border-2 rounded-lg p-3 flex flex-col justify-between gap-2 cursor-pointer hover:border-primary transition-colors"
 				onClick={() => setOpen(true)}
 				onKeyDown={(e) => e.key === "Enter" && setOpen(true)}
 				role="button"
@@ -84,16 +84,16 @@ export default function CarCard({ car }: CarCardProps) {
 							value={car.fuel}
 						/>
 					</div>
-					<div className="flex gap-2 text-muted-foreground">
-						Capacidade carga:
+					<div className="flex text-muted-foreground">
+						<span className="mr-2">Capacidade:</span>
 						{car?.capacities.map((c) => (
-							<div key={c.id} className="flex gap-2">
+							<span key={c.id} className="flex">
 								<span className="flex gap-0.5">
 									<p>{c.value}</p>
 									<p>{CAPACITY_LABELS[c.unit]}</p>
 								</span>
-								<span>/</span>
-							</div>
+								<span className="mx-0.5">/</span>
+							</span>
 						))}
 					</div>
 				</div>

@@ -40,7 +40,7 @@ interface CarFormProps {
 const CAPACITY_UNITS: { value: CapacityUnit; label: string }[] = [
 	{ value: "m3", label: "Volume (m³)" },
 	{ value: "boxes", label: "Caixas" },
-	{ value: "weight_kg", label: "Peso (kg)" },
+	{ value: "kg", label: "Peso (kg)" },
 	{ value: "pallets", label: "Pallets" },
 ]
 
