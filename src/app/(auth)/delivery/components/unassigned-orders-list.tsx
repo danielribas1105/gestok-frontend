@@ -32,7 +32,7 @@ export default function UnassignedOrdersList({
 						<span className="font-medium">#{order.cod_order}</span>
 						<span className="text-gray-500 truncate">{order.client_name}</span>
 						<span className="text-gray-400 text-xs">
-							{order.total_weight_kg.toLocaleString("pt-BR")}kg
+							{`${order.total_quantity} caixas / ${order.total_volume.toLocaleString("pt-BR")} m3 / ${order.total_kg.toLocaleString("pt-BR")} kg`}
 						</span>
 						<select
 							className="border rounded-md px-1.5 py-1 text-xs mt-1"
@@ -44,7 +44,7 @@ export default function UnassignedOrdersList({
 							<option value="">Atribuir a...</option>
 							{cargos.map((c, idx) => (
 								<option key={c.id} value={c.id}>
-									Cargo {idx + 1}
+									Carga {idx + 1}
 								</option>
 							))}
 						</select>

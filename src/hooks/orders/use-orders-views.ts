@@ -22,6 +22,7 @@ export interface OrderGroupRow {
 	seller_name: string
 	total_items: number
 	total_value: number
+	total_quantity: number
 	observations?: string | null
 	items: OrderItemRow[] // linhas originais desse pedido (para expandir)
 }
@@ -33,8 +34,11 @@ export interface ProductGroupRow {
 	product_code: string
 	product_unit: string
 	product_weight: number
+	product_volume: number
+	product_boxes_pallet: number
 	total_quantity: number
 	total_value: number
+	total_order_quantity: number
 	order_count: number
 	items: OrderItemRow[] // linhas originais desse produto (para expandir)
 }
@@ -68,6 +72,7 @@ export const useOrdersViews = (filters: OrdersFilters = {}) => {
 					seller_name: row.seller_name,
 					total_items: row.total_order_items,
 					total_value: row.total_order_value,
+					total_quantity: row.total_order_quantity,
 					observations: row.observations,
 					items: [],
 				})
@@ -94,8 +99,11 @@ export const useOrdersViews = (filters: OrdersFilters = {}) => {
 					product_code: row.product_code,
 					product_unit: row.product_unit,
 					product_weight: row.product_weight,
+					product_volume: row.product_volume,
+					product_boxes_pallet: row.product_boxes_pallet,
 					total_quantity: 0,
 					total_value: 0,
+					total_order_quantity: 0,
 					order_count: 0,
 					items: [],
 				})

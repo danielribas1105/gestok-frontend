@@ -10,7 +10,9 @@ export type DeliveryStatus =
 export interface CargoOrder {
 	cod_order: string | number
 	client_name: string
-	total_weight_kg: number
+	total_kg: number
+	total_volume: number
+	total_quantity: number
 	total_value: number
 	has_nf: boolean
 }

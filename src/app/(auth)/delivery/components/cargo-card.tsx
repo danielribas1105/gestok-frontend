@@ -3,7 +3,6 @@
 import { Cargo, CargoOrder } from "@/types/Delivery"
 import { Checkbox } from "@/components/ui/checkbox"
 import { X } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import {
 	Select,
@@ -14,9 +13,15 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Car } from "@/schemas/Car"
-import { cargoTotalValue, cargoTotalWeight } from "@/lib/functions/delivery"
-import { CAPACITY_LABELS } from "@/constants/Cars"
+import { CapacityUnit, Car } from "@/schemas/Car"
+import {
+	capacityLevel,
+	cargoTotalBoxes,
+	cargoTotalValue,
+	cargoTotalVolume,
+	cargoTotalWeight,
+} from "@/lib/functions/delivery"
+import CapacityBar from "./capacity-bar"
 
 interface CargoCardProps {
 	index: number
@@ -39,7 +44,19 @@ export default function CargoCard({
 }: CargoCardProps) {
 	const car = cars?.find((c) => c.id === cargo.car_id)
 	const weight = cargoTotalWeight(cargo)
-	//const level = car ? capacityLevel(weight, car.capacity ?? 0) : "ok"
+	const volume = cargoTotalVolume(cargo)
+	const boxes = cargoTotalBoxes(cargo)
+	const level = car
+		? capacityLevel(weight, volume, boxes, car.capacities)
+		: "ok"
+
+	const getCapacity = (unit: CapacityUnit) =>
+		car?.capacities.find((capacity) => capacity.unit === unit)?.value
+
+	const volumeCapacity = getCapacity("m3")
+	const boxesCapacity = getCapacity("boxes")
+	const weightCapacity = getCapacity("kg")
+	const palletsCapacity = getCapacity("pallets")
 
 	return (
 		<div className="rounded-lg border p-4 flex flex-col gap-3">
@@ -59,7 +76,6 @@ export default function CargoCard({
 						value={cargo.car_id ?? ""}
 						onValueChange={(v) => {
 							const selectedCar = cars?.find((c) => c.id === v)
-							console.log("selectedCar", selectedCar)
 							onUpdate({
 								car_id: v || null,
 							})
@@ -72,7 +88,7 @@ export default function CargoCard({
 						<SelectContent>
 							{cars?.map((v) => (
 								<SelectItem key={v.id} value={v.id}>
-									{v.plate} — {v.model} {/* ({v.capacity}kg) */}
+									{v.plate} — {v.model}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -100,57 +116,36 @@ export default function CargoCard({
 					/>
 				</div>
 			</div>
-			<div className="flex gap-2 text-muted-foreground">
-				Capacidade carga:
-				{car?.capacities.map((c) => (
-					<div key={c.id} className="flex gap-2">
-						<span className="flex gap-0.5">
-							<p>{c.value}</p>
-							<p>{CAPACITY_LABELS[c.unit]}</p>
-						</span>
-						<span>/</span>
-					</div>
-				))}
-			</div>
 
-			{/* barra de capacidade de peso */}
-			{/* {car && (
-				<div className="flex flex-col gap-1">
-					<div className="flex justify-between text-xs text-gray-500">
-						<span>
-							{weight.toLocaleString("pt-BR")}kg /{" "}
-							{car.capacity ? car.capacity.toLocaleString("pt-BR") : 0}kg
-						</span>
-						<span
-							className={cn(
-								level === "over" && "text-red-600 font-medium",
-								level === "warning" && "text-amber-600 font-medium",
-							)}
-						>
-							{level === "over"
-								? "Excede capacidade"
-								: level === "warning"
-									? "Próximo do limite"
-									: "OK"}
-						</span>
-					</div>
-					<div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-						<div
-							className={cn(
-								"h-full rounded-full transition-all",
-								level === "over"
-									? "bg-red-500"
-									: level === "warning"
-										? "bg-amber-500"
-										: "bg-green-500",
-							)}
-							style={{
-								width: `${Math.min((weight / (car.capacity ?? 0)) * 100, 100)}%`,
-							}}
-						/>
-					</div>
-				</div>
-			)} */}
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<CapacityBar
+					label="Volume"
+					unit="m3"
+					value={volume}
+					capacity={volumeCapacity}
+				/>
+
+				<CapacityBar
+					label="Caixas"
+					unit="boxes"
+					value={boxes}
+					capacity={boxesCapacity}
+				/>
+
+				<CapacityBar
+					label="Peso"
+					unit="kg"
+					value={weight}
+					capacity={weightCapacity}
+				/>
+
+				<CapacityBar
+					label="Pallets"
+					unit="pallets"
+					value={0}
+					capacity={palletsCapacity}
+				/>
+			</div>
 
 			{/* pedidos atribuídos a essa carga */}
 			<div className="flex flex-col divide-y border rounded-md">
@@ -167,10 +162,10 @@ export default function CargoCard({
 						<span className="flex-1">
 							#{order.cod_order} — {order.client_name}
 						</span>
-						<span className="text-gray-500 w-16 text-right">
-							{order.total_weight_kg.toLocaleString("pt-BR")}kg
+						<span className="text-gray-500 text-right">
+							{`${order.total_volume.toLocaleString("pt-BR")} m³ / ${order.total_quantity.toLocaleString("pt-BR")} caixas / ${order.total_kg.toLocaleString("pt-BR")} Kg`}
 						</span>
-						<label className="flex items-center gap-1 text-xs text-gray-500">
+						<label className="flex items-center gap-1 ml-2 text-xs text-gray-500">
 							<Checkbox
 								checked={order.has_nf}
 								onCheckedChange={() => onToggleNf(order.cod_order)}

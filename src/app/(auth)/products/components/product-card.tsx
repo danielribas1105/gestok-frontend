@@ -64,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 						<LabelCard
 							description="Peso bruto do produto"
 							label="Peso (Kg)"
-							value={product.weight_kg_per_unit ?? "-"}
+							value={product.kg_per_unit ?? "-"}
 						/>
 						<LabelCard
 							description="Volume unitário"

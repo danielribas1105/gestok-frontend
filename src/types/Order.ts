@@ -77,7 +77,9 @@ export interface BackendOrderItem {
 	product_name?: string | null
 	product_code?: string | null
 	product_unit?: string | null
-	product_weight?: string | null
+	product_weight?: number | 0
+	product_volume?: number | 0
+	product_boxes_pallet?: number | 0
 }
 export interface BackendOrder {
 	id: string
@@ -141,13 +143,17 @@ export interface OrderItemRow {
 	product_code: string
 	product_unit: string
 	product_weight: number
+	product_volume: number
+	product_boxes_pallet: number
 	quantity: number
 	unit_value: number
 	item_total_value: number
 	item_total_weight: number
+	item_total_volume: number
 
 	total_order_items: number
 	total_order_value: number
+	total_order_quantity: number
 
 	store_id: string
 	store_name: string

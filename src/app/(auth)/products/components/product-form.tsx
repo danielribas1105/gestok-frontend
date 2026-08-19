@@ -36,7 +36,9 @@ type ProductFormState = {
 	description: string
 	code: string
 	unit: string
-	unit_weight: number
+	kg_per_unit: number
+	volume_m3_per_unit: number
+	boxes_per_pallet: number
 	value: number
 	active: boolean
 }
@@ -55,7 +57,9 @@ export default function ProductForm({
 		name: product?.name || "",
 		code: product?.code || "",
 		unit: product?.unit || "",
-		unit_weight: product?.unit_weight || "",
+		kg_per_unit: product?.kg_per_unit || "",
+		volume_m3_per_unit: product?.volume_m3_per_unit || "",
+		boxes_per_pallet: product?.boxes_per_pallet || "",
 		active: product?.active ?? true,
 	}
 
@@ -80,7 +84,13 @@ export default function ProductForm({
 
 		const payload = {
 			...form,
-			unit_weight: form.unit_weight ? parseNumberBR(form.unit_weight) : null,
+			kg_per_unit: form.kg_per_unit ? parseNumberBR(form.kg_per_unit) : null,
+			volume_m3_per_unit: form.volume_m3_per_unit
+				? parseNumberBR(form.volume_m3_per_unit)
+				: null,
+			boxes_per_pallet: form.boxes_per_pallet
+				? parseNumberBR(form.boxes_per_pallet)
+				: null,
 		}
 
 		try {
@@ -181,14 +191,40 @@ export default function ProductForm({
 						</SelectContent>
 					</Select>
 				</div>
+			</div>
+			<div className="grid grid-cols-3 gap-2">
 				<div className="space-y-1">
 					<Label htmlFor="unit-weight">Peso (Kg)</Label>
 					<Input
 						id="unit-weight"
 						placeholder="Peso do produto pela unidade"
-						value={form.unit_weight}
+						value={form.kg_per_unit}
 						onChange={(e) =>
-							handleChange("unit_weight", e.target.value.toUpperCase())
+							handleChange("kg_per_unit", e.target.value.toUpperCase())
+						}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="unit-volum">Volume (m3)</Label>
+					<Input
+						id="unit-volum"
+						placeholder="Volume de 1 unidade"
+						value={form.volume_m3_per_unit}
+						onChange={(e) =>
+							handleChange("volume_m3_per_unit", e.target.value.toUpperCase())
+						}
+						disabled={loading}
+					/>
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="boxes-pallet">Caixas por pallet</Label>
+					<Input
+						id="boxes-pallet"
+						placeholder="Caixas por pallet"
+						value={form.boxes_per_pallet}
+						onChange={(e) =>
+							handleChange("boxes_per_pallet", e.target.value.toUpperCase())
 						}
 						disabled={loading}
 					/>

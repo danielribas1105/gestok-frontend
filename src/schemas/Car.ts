@@ -15,7 +15,7 @@ export const CarFuelEnum = z.enum([
 ])
 export type CarFuel = z.infer<typeof CarFuelEnum>
 
-export const CapacityUnitEnum = z.enum(["m3", "boxes", "weight_kg", "pallets"])
+export const CapacityUnitEnum = z.enum(["m3", "boxes", "kg", "pallets"])
 export type CapacityUnit = z.infer<typeof CapacityUnitEnum>
 
 // ---------------------------------------------------------------------------
