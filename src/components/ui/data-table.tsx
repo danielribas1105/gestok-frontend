@@ -34,6 +34,12 @@ export function DataTable<TData, TValue>({
 	return (
 		<div className="overflow-hidden rounded-md border">
 			<Table>
+				{/* 👇 define a largura de cada coluna uma única vez, vale para thead e tbody */}
+				<colgroup>
+					{table.getVisibleLeafColumns().map((column) => (
+						<col key={column.id} style={{ width: column.getSize() }} />
+					))}
+				</colgroup>
 				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>

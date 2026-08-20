@@ -22,6 +22,12 @@ export const routes = {
 		delete: (id: string) => `/drivers/${id}`,
 		getById: (id: string) => `/drivers/${id}`,
 	},
+	inventory: {
+		list: "/inventory",
+		updateBatch: "/inventory/batch",
+		update: (id: string) => `/inventory/${id}`,
+		delete: (id: string) => `/jobs/${id}`,
+	},
 	jobs: {
 		list: "/jobs",
 		create: "/jobs",

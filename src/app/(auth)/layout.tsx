@@ -1,3 +1,4 @@
+import AddStockButton from "@/components/add-stock-btn"
 import PageLayout from "@/components/layout/page-layout"
 import LogoutButton from "@/components/logout-button"
 import { AppSidebar } from "@/components/ui/app-sidebar"
@@ -20,6 +21,7 @@ export default function RootLayout({
 				<header className="flex justify-between items-center py-2 px-4">
 					<SidebarTrigger className="text-primary/70" />
 					<div className="flex items-center gap-2">
+						<AddStockButton />
 						<UploadFileButton />
 						<LogoutButton />
 					</div>

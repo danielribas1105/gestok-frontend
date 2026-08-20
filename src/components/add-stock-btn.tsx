@@ -1,11 +1,11 @@
 "use client"
+import InventoryModal from "@/app/(auth)/inventory/components/inventory-modal"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { useState } from "react"
-import JobModal from "@/app/(auth)/jobs/components/job-modal"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
-export default function AddJobButton() {
+export default function AddStockButton() {
 	const [open, setOpen] = useState(false)
 
 	return (
@@ -19,12 +19,12 @@ export default function AddJobButton() {
 						onClick={() => setOpen(true)}
 					>
 						<Plus />
-						Movimentação
+						Estoque
 					</Button>
 				</TooltipTrigger>
-				<TooltipContent>Adicionar nova movimentação</TooltipContent>
+				<TooltipContent>Entrada de produtos</TooltipContent>
 			</Tooltip>
-			<JobModal open={open} onOpenChange={setOpen} />
+			<InventoryModal open={open} onOpenChange={setOpen} />
 		</>
 	)
 }
