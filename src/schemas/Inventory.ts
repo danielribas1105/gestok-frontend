@@ -5,6 +5,8 @@ export const StockMovementTypeEnum = z.enum(["in", "out"])
 export const InventorySchema = z.object({
 	id: z.uuid(),
 	product_id: z.uuid(),
+	product_code: z.string(),
+	product_name: z.string(),
 	current_quantity: z.number().positive("Valor deve ser positivo"),
 	reserved_quantity: z.number().positive("Valor deve ser positivo"),
 	available_quantity: z.number().positive("Valor deve ser positivo"),
@@ -15,6 +17,7 @@ export const StockMovementSchema = z.object({
 	id: z.uuid(),
 	product_id: z.uuid(),
 	order_id: z.uuid(),
+	code: z.string(),
 	movement_type: StockMovementTypeEnum,
 	quantity: z.number().positive("Valor deve ser positivo"),
 	movement_date: z.coerce.date().nullable().optional(),
