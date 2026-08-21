@@ -2,6 +2,7 @@
 
 import { routes } from "@/config/routes"
 import { clientApi } from "@/lib/api/client"
+import { queryKeys } from "@/lib/query-keys"
 import { BackendOrder, OrderItemRow, OrdersFilters } from "@/types/Order"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 
@@ -19,7 +20,10 @@ export const useOrdersRaw = (filters: OrdersFilters = {}) => {
 	const queryClient = useQueryClient()
 
 	const query = useQuery({
-		queryKey: ["orders-raw", filters],
+		// combina a chave fixa com os filters variáveis — invalidateQueries
+		// usando só `queryKeys.ordersRaw` (o prefixo) continua pegando
+		// qualquer combinação de filters, pois o React Query invalida por prefixo
+		queryKey: [...queryKeys.ordersRaw, filters],
 		queryFn: async (): Promise<OrderItemRow[]> => {
 			const params = new URLSearchParams()
 			params.append("limit", "5000")
@@ -33,7 +37,6 @@ export const useOrdersRaw = (filters: OrdersFilters = {}) => {
 
 			let rows = flattenOrders(orders)
 
-			// Filtro client-side temporário (o backend ainda não filtra)
 			if (filters.status) {
 				rows = rows.filter((r) => r.status === filters.status)
 			}
@@ -67,7 +70,7 @@ export const useOrdersRaw = (filters: OrdersFilters = {}) => {
 	})
 
 	const refreshOrders = async () => {
-		await queryClient.invalidateQueries({ queryKey: ["orders-raw"] })
+		await queryClient.invalidateQueries({ queryKey: queryKeys.ordersRaw })
 	}
 
 	return {
@@ -143,6 +146,11 @@ function flattenOrders(orders: BackendOrder[]): OrderItemRow[] {
 				release_reason: order.release_reason,
 				released_at: order.released_at,
 				created_at: order.created_at,
+
+				stock_status: order.stock_status ?? undefined,
+				stock_item_status: item.stock_item_status ?? undefined,
+				stock_hold: order.stock_hold ?? false,
+				stock_hold_reason: order.stock_hold_reason,
 			})
 		})
 	})

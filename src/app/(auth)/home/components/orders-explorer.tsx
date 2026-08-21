@@ -22,10 +22,11 @@ import {
 } from "@/components/ui/table"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { OrderItemRow } from "@/types/Order"
-import { ordersColumns } from "./orders-columns"
+import { getOrdersColumns } from "./orders-columns"
 import { cn } from "@/lib/utils"
 import { OrderStatusLegend } from "./order-status-legend"
 import DeliveryPlanner from "../../delivery/components/delivery-planner"
+import { ProductQuantityCheck } from "@/hooks/orders/use-products-quantity-check"
 
 type ViewMode = "flat" | "by_order" | "by_product"
 
@@ -38,10 +39,18 @@ const GROUPING_BY_VIEW: Record<ViewMode, GroupingState> = {
 interface OrdersExplorerProps {
 	rows: OrderItemRow[]
 	isLoading?: boolean
-	// devolve os itens selecionados (linha a linha) + a lista única de pedidos selecionados
+	stockByProduct?: Record<string, ProductQuantityCheck> // product_id -> check
+	isCheckingStock?: boolean
+	userRole?: "admin" | "operator" | "user"
+	pendingHoldOrderId?: string | null
+	onToggleHold?: (orderId: string, nextValue: boolean) => void
+	// devolve os itens selecionados (linha a linha) + pedidos selecionados
+	// (código de exibição e id real, usados em contextos diferentes)
 	onSelectionChange?: (selection: {
 		items: OrderItemRow[]
 		orderCodes: (string | number)[]
+		orderIds: string[]
+		itemIds: string[]
 	}) => void
 }
 
@@ -68,15 +77,42 @@ function textColor(color?: "draft") {
 export function OrdersExplorer({
 	rows,
 	isLoading,
+	stockByProduct,
+	isCheckingStock,
+	userRole,
+	pendingHoldOrderId,
+	onToggleHold,
 	onSelectionChange,
 }: OrdersExplorerProps) {
 	const [view, setView] = useState<ViewMode>("by_order")
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [plannerOpen, setPlannerOpen] = useState(false)
 
+	// colunas dependem do mapa de estoque (ícone/texto por linha), por
+	// isso viram uma função memoizada em vez de array estático
+	const columns = useMemo(
+		() =>
+			getOrdersColumns({
+				stockByProduct,
+				isCheckingStock,
+				userRole,
+				pendingHoldOrderId,
+				view,
+				onToggleHold,
+			}),
+		[
+			stockByProduct,
+			isCheckingStock,
+			userRole,
+			pendingHoldOrderId,
+			view,
+			onToggleHold,
+		],
+	)
+
 	const table = useReactTable({
 		data: rows,
-		columns: ordersColumns,
+		columns, //columns: ordersColumns,
 		state: {
 			grouping: GROUPING_BY_VIEW[view],
 			rowSelection,
@@ -100,9 +136,19 @@ export function OrdersExplorer({
 			.map((r) => r.original)
 	}, [rowSelection, table])
 
-	// pedidos únicos presentes na seleção
+	// pedidos únicos presentes na seleção (código de exibição, pra UI)
 	const selectedOrderCodes = useMemo(() => {
 		return Array.from(new Set(selectedLeafRows.map((item) => item.cod_order)))
+	}, [selectedLeafRows])
+
+	// ids reais dos pedidos selecionados (uuid), pra chamadas ao backend
+	// (ex: verificação de estoque, programação de entrega)
+	const selectedOrderIds = useMemo(() => {
+		return Array.from(new Set(selectedLeafRows.map((item) => item.order_id)))
+	}, [selectedLeafRows])
+
+	const selectedItemIds = useMemo(() => {
+		return selectedLeafRows.map((item) => item.item_id)
 	}, [selectedLeafRows])
 
 	// só notifica o pai quando o resultado derivado muda de fato
@@ -110,8 +156,16 @@ export function OrdersExplorer({
 		onSelectionChange?.({
 			items: selectedLeafRows,
 			orderCodes: selectedOrderCodes,
+			orderIds: selectedOrderIds,
+			itemIds: selectedItemIds,
 		})
-	}, [selectedLeafRows, selectedOrderCodes, onSelectionChange])
+	}, [
+		selectedLeafRows,
+		selectedOrderCodes,
+		selectedOrderIds,
+		selectedItemIds,
+		onSelectionChange,
+	])
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -119,7 +173,7 @@ export function OrdersExplorer({
 				<Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
 					<TabsList>
 						<TabsTrigger value="by_order">Por Pedido</TabsTrigger>
-						{/* <TabsTrigger value="by_product">Por Produto</TabsTrigger> */}
+						<TabsTrigger value="by_product">Por Produto</TabsTrigger>
 						<TabsTrigger value="flat">Linha a Linha</TabsTrigger>
 					</TabsList>
 				</Tabs>
@@ -156,18 +210,91 @@ export function OrdersExplorer({
 						</TableHeader>
 						<TableBody>
 							{table.getRowModel().rows.length ? (
-								table.getRowModel().rows.map((row) => (
-									<TableRow
-										key={row.id}
-										className={cn(
-											row.getIsGrouped() && "bg-gray-50/70 font-medium",
-											row.getIsSelected() && "bg-blue-50",
-										)}
-									>
-										{row.getVisibleCells().map((cell) => {
-											// coluna de seleção: sempre renderiza o checkbox,
-											// tanto em linha de grupo quanto em linha normal
-											if (cell.column.id === "select") {
+								table.getRowModel().rows.map((row) => {
+									// pega o pedido de origem tanto em linha de grupo quanto em linha-folha,
+									// pra saber se esse pedido está em hold
+									const original = row.getIsGrouped()
+										? row.subRows[0]?.original
+										: row.original
+									const isHeld = original?.stock_hold
+
+									return (
+										<TableRow
+											key={row.id}
+											className={cn(
+												row.getIsGrouped() && "font-medium",
+												isHeld
+													? "bg-amber-50"
+													: row.getIsGrouped()
+														? "bg-gray-50/70"
+														: row.getIsSelected()
+															? "bg-blue-50"
+															: undefined,
+											)}
+										>
+											{row.getVisibleCells().map((cell) => {
+												// coluna de seleção: sempre renderiza o checkbox,
+												// tanto em linha de grupo quanto em linha normal
+												if (
+													cell.column.id === "select" ||
+													cell.column.id === "stock_hold_toggle"
+												) {
+													return (
+														<TableCell key={cell.id}>
+															{flexRender(
+																cell.column.columnDef.cell,
+																cell.getContext(),
+															)}
+														</TableCell>
+													)
+												}
+
+												if (cell.getIsGrouped()) {
+													return (
+														<TableCell key={cell.id}>
+															<button
+																onClick={row.getToggleExpandedHandler()}
+																className="flex items-center gap-1"
+															>
+																{row.getIsExpanded() ? (
+																	<ChevronDown className="h-4 w-4" />
+																) : (
+																	<ChevronRight className="h-4 w-4" />
+																)}
+																{flexRender(
+																	cell.column.columnDef.cell,
+																	cell.getContext(),
+																)}
+																<span className="text-gray-400">
+																	({row.subRows.length})
+																</span>
+															</button>
+														</TableCell>
+													)
+												}
+
+												if (cell.getIsAggregated()) {
+													return (
+														<TableCell
+															key={cell.id}
+															className={`${alignClass(
+																cell.column.columnDef.meta?.align,
+															)} 
+																${textColor(cell.column.columnDef.meta?.color)}`}
+														>
+															{flexRender(
+																cell.column.columnDef.aggregatedCell ??
+																	cell.column.columnDef.cell,
+																cell.getContext(),
+															)}
+														</TableCell>
+													)
+												}
+
+												if (cell.getIsPlaceholder()) {
+													return <TableCell key={cell.id} />
+												}
+
 												return (
 													<TableCell key={cell.id}>
 														{flexRender(
@@ -176,69 +303,14 @@ export function OrdersExplorer({
 														)}
 													</TableCell>
 												)
-											}
-
-											if (cell.getIsGrouped()) {
-												return (
-													<TableCell key={cell.id}>
-														<button
-															onClick={row.getToggleExpandedHandler()}
-															className="flex items-center gap-1"
-														>
-															{row.getIsExpanded() ? (
-																<ChevronDown className="h-4 w-4" />
-															) : (
-																<ChevronRight className="h-4 w-4" />
-															)}
-															{flexRender(
-																cell.column.columnDef.cell,
-																cell.getContext(),
-															)}
-															<span className="text-gray-400">
-																({row.subRows.length})
-															</span>
-														</button>
-													</TableCell>
-												)
-											}
-
-											if (cell.getIsAggregated()) {
-												return (
-													<TableCell
-														key={cell.id}
-														className={`${alignClass(
-															cell.column.columnDef.meta?.align,
-														)} 
-															${textColor(cell.column.columnDef.meta?.color)}`}
-													>
-														{flexRender(
-															cell.column.columnDef.aggregatedCell ??
-																cell.column.columnDef.cell,
-															cell.getContext(),
-														)}
-													</TableCell>
-												)
-											}
-
-											if (cell.getIsPlaceholder()) {
-												return <TableCell key={cell.id} />
-											}
-
-											return (
-												<TableCell key={cell.id}>
-													{flexRender(
-														cell.column.columnDef.cell,
-														cell.getContext(),
-													)}
-												</TableCell>
-											)
-										})}
-									</TableRow>
-								))
+											})}
+										</TableRow>
+									)
+								})
 							) : (
 								<TableRow>
 									<TableCell
-										colSpan={ordersColumns.length}
+										colSpan={columns.length}
 										className="h-24 text-center text-gray-400"
 									>
 										Nenhum resultado.

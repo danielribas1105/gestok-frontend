@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react"
 
+export type UserRole = "admin" | "operator" | "user"
+
 type User = {
 	id: string
 	email: string
-	role: string
+	role: UserRole
 }
 
 export function useSession() {

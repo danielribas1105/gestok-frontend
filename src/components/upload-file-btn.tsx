@@ -99,7 +99,7 @@ export default function UploadFileButton() {
 				<TooltipTrigger asChild>
 					<Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
 						<Plus />
-						Carregar arquivo
+						Carregar pedidos
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent>Fazer upload do arquivo de pedidos</TooltipContent>

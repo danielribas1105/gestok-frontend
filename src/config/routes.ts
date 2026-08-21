@@ -38,6 +38,8 @@ export const routes = {
 		list: "/orders",
 		create: "/orders",
 		createBatch: "/orders/batch",
+		productsQuantityCheck: "/orders/products-quantity-check",
+		setStockHold: (id: string) => `/orders/${id}/stock-hold`,
 		update: (id: string) => `/orders/${id}`,
 		delete: (id: string) => `/orders/${id}`,
 	},

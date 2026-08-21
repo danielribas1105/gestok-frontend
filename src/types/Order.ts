@@ -80,6 +80,7 @@ export interface BackendOrderItem {
 	product_weight?: number | 0
 	product_volume?: number | 0
 	product_boxes_pallet?: number | 0
+	stock_item_status?: "in_stock" | "no_stock" | "on_hold" | null
 }
 export interface BackendOrder {
 	id: string
@@ -105,6 +106,9 @@ export interface BackendOrder {
 	processed_at?: string | null
 	observations?: string | null
 	items: BackendOrderItem[]
+	stock_hold: boolean
+	stock_hold_reason?: string | null
+	stock_status?: "sufficient" | "partial" | "insufficient" | "on_hold" | null
 }
 // Flattened Order Item Row - cada linha representa um item de pedido
 export interface OrderItemRow {
@@ -161,6 +165,11 @@ export interface OrderItemRow {
 	release_reason?: string | null
 	released_at?: string | null
 	created_at?: string | null
+
+	stock_status?: "sufficient" | "partial" | "insufficient" | "on_hold"
+	stock_item_status?: "in_stock" | "no_stock" | "on_hold"
+	stock_hold: boolean
+	stock_hold_reason?: string | null
 }
 
 export interface FlattenedOrdersResult {
