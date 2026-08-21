@@ -25,6 +25,7 @@ export interface OrderGroupRow {
 	total_quantity: number
 	observations?: string | null
 	items: OrderItemRow[] // linhas originais desse pedido (para expandir)
+	stock_status: string
 }
 
 export interface ProductGroupRow {
@@ -36,6 +37,7 @@ export interface ProductGroupRow {
 	product_weight: number
 	product_volume: number
 	product_boxes_pallet: number
+	stock_item_status: string
 	total_quantity: number
 	total_value: number
 	total_order_quantity: number
@@ -75,6 +77,7 @@ export const useOrdersViews = (filters: OrdersFilters = {}) => {
 					total_quantity: row.total_order_quantity,
 					observations: row.observations,
 					items: [],
+					stock_status: row.stock_status,
 				})
 			}
 			map.get(row.order_id)!.items.push(row)
@@ -101,6 +104,7 @@ export const useOrdersViews = (filters: OrdersFilters = {}) => {
 					product_weight: row.product_weight,
 					product_volume: row.product_volume,
 					product_boxes_pallet: row.product_boxes_pallet,
+					stock_item_status: row.stock_item_status,
 					total_quantity: 0,
 					total_value: 0,
 					total_order_quantity: 0,

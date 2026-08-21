@@ -54,6 +54,7 @@ export default function DeliveryPlanner({
 	console.log("unassignedOrders", unassignedOrders)
 	console.log("cargos", cargos)
 	console.log("cars", cars)
+
 	// re-sincroniza sempre que o dialog abre com a seleção atual
 	useEffect(() => {
 		if (!open) return

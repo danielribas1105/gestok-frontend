@@ -1,19 +1,61 @@
 "use client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSession } from "@/hooks/auth/use-session"
-import { CheckCircle, Circle, Loader2, XCircle } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { OrdersExplorer } from "./components/orders-explorer"
-import { OrderStatusLegend } from "./components/order-status-legend"
-import SummaryWrapper from "./components/summary-wrapper"
 import { useOrdersViews } from "@/hooks/orders/use-orders-views"
+import {
+	AlertTriangle,
+	CheckCircle,
+	Circle,
+	Loader2,
+	XCircle,
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { OrdersExplorer } from "./components/orders-explorer"
+import SummaryWrapper from "./components/summary-wrapper"
+import { useProductsQuantityCheck } from "@/hooks/orders/use-products-quantity-check"
+import { useOrderMutations } from "@/hooks/orders/use-order-mutations"
 
 // Main screen - list of orders
 export default function HomePage() {
 	const { user, loading } = useSession()
+	const { setStockHold } = useOrderMutations()
+
+	const handleToggleHold = (orderId: string, nextValue: boolean) => {
+		setStockHold.mutate({ orderId, stockHold: nextValue })
+	}
+
+	// só há um order_id "em voo" por vez, já que é a mesma mutation
+	// compartilhada por todos os checkboxes da tabela
+	const pendingHoldOrderId = setStockHold.isPending
+		? (setStockHold.variables?.orderId ?? null)
+		: null
+
 	const router = useRouter()
-	const { flatRows, summary, isLoading: isLoadingOrders } = useOrdersViews()
+	const {
+		flatRows,
+		summary,
+		byOrder,
+		isLoading: isLoadingOrders,
+	} = useOrdersViews()
+
+	// ids dos pedidos selecionados na tabela (vem do OrdersExplorer)
+	/* const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([])
+	const { data: stockCheck, isFetching: isCheckingStock } =
+		useProductsQuantityCheck(selectedOrderIds) */
+
+	const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
+
+	const { data: stockCheck, isFetching: isCheckingStock } =
+		useProductsQuantityCheck(selectedItemIds)
+
+	const stockByProduct = useMemo(() => {
+		if (!stockCheck) return undefined
+		return Object.fromEntries(
+			stockCheck.items.map((item) => [item.product_id, item]),
+		)
+	}, [stockCheck])
+
 	const [status, setStatus] = useState<{
 		status: "checking" | "online" | "offline"
 		timestamp: string
@@ -24,6 +66,7 @@ export default function HomePage() {
 
 	console.log("flatRows", flatRows)
 	console.log("summary", summary)
+	console.log("stockCheck", stockCheck)
 
 	useEffect(() => {
 		if (!loading && !user) {
@@ -109,7 +152,44 @@ export default function HomePage() {
 				</div>
 			</div>
 			<SummaryWrapper summary={summary} isLoading={isLoadingOrders} />
-			<OrdersExplorer rows={flatRows} isLoading={isLoadingOrders} />
+			<OrdersExplorer
+				rows={flatRows}
+				isLoading={isLoadingOrders}
+				stockByProduct={stockByProduct}
+				isCheckingStock={isCheckingStock}
+				userRole={user?.role}
+				pendingHoldOrderId={pendingHoldOrderId}
+				onToggleHold={handleToggleHold}
+				onSelectionChange={({ itemIds }) => setSelectedItemIds(itemIds)}
+			/>
+
+			{selectedItemIds.length > 0 && (
+				<div className="rounded-md border p-3 text-sm">
+					{isCheckingStock && (
+						<span className="text-gray-400">Verificando estoque...</span>
+					)}
+					{stockCheck && !isCheckingStock && (
+						<div className="flex flex-col gap-1">
+							{!stockCheck.all_sufficient && (
+								<div className="flex items-center gap-1 text-amber-600 font-medium">
+									<AlertTriangle className="h-4 w-4" />
+									Estoque insuficiente para{" "}
+									{stockCheck.items.filter((i) => !i.is_sufficient).length}{" "}
+									produto(s)
+								</div>
+							)}
+							{stockCheck.items
+								.filter((i) => !i.is_sufficient)
+								.map((item) => (
+									<div key={item.product_id} className="text-gray-600">
+										{item.name}: pedido {item.total_quantity} / disponível{" "}
+										{item.available_quantity}
+									</div>
+								))}
+						</div>
+					)}
+				</div>
+			)}
 		</section>
 	)
 }
