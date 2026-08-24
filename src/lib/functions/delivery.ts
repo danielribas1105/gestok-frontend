@@ -3,13 +3,13 @@ import { CarCapacityRead } from "@/schemas/Car"
 import { CapacityLevel, Cargo, CargoOrder } from "@/types/Delivery"
 import { OrderItemRow } from "@/types/Order"
 
-export function groupSelectedIntoCargaOrders(
+export function groupSelectedIntoCargoOrders(
 	items: OrderItemRow[],
 ): CargoOrder[] {
 	const byOrder = new Map<string | number, CargoOrder>()
 
 	for (const item of items) {
-		const key = item.cod_order
+		const key = item.order_id
 		const weight = item.product_weight ?? 0 * Number(item.quantity)
 		const existing = byOrder.get(key)
 
@@ -19,7 +19,8 @@ export function groupSelectedIntoCargaOrders(
 				(existing.total_value += Number(item.item_total_value)))
 		} else {
 			byOrder.set(key, {
-				cod_order: key,
+				order_id: key,
+				cod_order: item.cod_order,
 				client_name: item.client_name,
 				total_kg: item.item_total_weight,
 				total_volume: item.item_total_volume,

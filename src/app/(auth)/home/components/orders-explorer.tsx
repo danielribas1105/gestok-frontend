@@ -27,6 +27,10 @@ import { cn } from "@/lib/utils"
 import { OrderStatusLegend } from "./order-status-legend"
 import DeliveryPlanner from "../../delivery/components/delivery-planner"
 import { ProductQuantityCheck } from "@/hooks/orders/use-products-quantity-check"
+import { Cargo, DeliveryCreatePayload } from "@/types/Delivery"
+import { Delivery } from "@/schemas/Delivery"
+import { cargoTotalWeight } from "@/lib/functions/delivery"
+import { useDeliveryMutations } from "@/hooks/delivery/use-delivery-mutations"
 
 type ViewMode = "flat" | "by_order" | "by_product"
 
@@ -34,6 +38,25 @@ const GROUPING_BY_VIEW: Record<ViewMode, GroupingState> = {
 	flat: [],
 	by_order: ["cod_order"],
 	by_product: ["product_name"],
+}
+
+// achata as cargas programadas em um array de Delivery (1 item por pedido)
+function buildDeliveriesPayload(
+	cargos: Cargo[],
+): Partial<DeliveryCreatePayload>[] {
+	return cargos.flatMap((cargo) =>
+		cargo.orders.map((order) => ({
+			order_id: order.order_id,
+			car_id: cargo.car_id,
+			user_id: cargo.user_id,
+			invoice: "Aguardando NF",
+			weight: String(order.total_kg ?? cargoTotalWeight(cargo)),
+			observations: "",
+			status: cargo.status, // "pending" já vem de createCargo()
+			delivery_confirmed: false,
+			delivery_at: cargo.delivery_date ?? undefined,
+		})),
+	)
 }
 
 interface OrdersExplorerProps {
@@ -87,6 +110,7 @@ export function OrdersExplorer({
 	const [view, setView] = useState<ViewMode>("by_order")
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [plannerOpen, setPlannerOpen] = useState(false)
+	const { createDelivery } = useDeliveryMutations()
 
 	// colunas dependem do mapa de estoque (ícone/texto por linha), por
 	// isso viram uma função memoizada em vez de array estático
@@ -343,10 +367,14 @@ export function OrdersExplorer({
 				onOpenChange={setPlannerOpen}
 				selectedItems={selectedLeafRows}
 				onConfirm={(cargos) => {
-					// TODO: enviar para o backend
 					console.log("cargas confirmadas", cargos)
-					setPlannerOpen(false)
-					setRowSelection({})
+					const deliveries = buildDeliveriesPayload(cargos)
+					createDelivery.mutate(deliveries, {
+						onSuccess: () => {
+							setPlannerOpen(false)
+							setRowSelection({})
+						},
+					})
 				}}
 			/>
 		</div>

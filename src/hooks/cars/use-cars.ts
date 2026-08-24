@@ -2,7 +2,7 @@
 
 import { routes } from "@/config/routes"
 import { clientApi } from "@/lib/api/client"
-import { Car, CarCapacityRead } from "@/schemas/Car"
+import { Car } from "@/schemas/Car"
 import { useQuery } from "@tanstack/react-query"
 
 export function useCars() {

@@ -35,12 +35,6 @@ export default function SummaryWrapper({
 					{isLoading ? "carregando..." : `${summary.totalItems} itens no total`}
 				</p>
 			</SummaryCard>
-			<SummaryCard title="Valor Total" icon={DollarSign}>
-				<div className="text-2xl font-bold">
-					{isLoading ? "-" : formattedValue}
-				</div>
-				<p className="text-xs text-muted-foreground mt-1">Todos os pedidos</p>
-			</SummaryCard>
 			<SummaryCard title="Pendentes" icon={Clock}>
 				<div className="text-2xl font-bold text-yellow-600">
 					{isLoading ? "-" : summary.pendingOrders}
@@ -56,6 +50,12 @@ export default function SummaryWrapper({
 				<p className="text-xs text-muted-foreground mt-1">
 					{isLoading ? "-" : `${summary.canceledOrders} cancelados`}
 				</p>
+			</SummaryCard>
+			<SummaryCard title="Valor Total" icon={DollarSign}>
+				<div className="text-2xl font-bold">
+					{isLoading ? "-" : formattedValue}
+				</div>
+				<p className="text-xs text-muted-foreground mt-1">Todos os pedidos</p>
 			</SummaryCard>
 		</div>
 	)

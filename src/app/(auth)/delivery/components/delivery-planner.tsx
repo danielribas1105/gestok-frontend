@@ -21,8 +21,9 @@ import {
 	cargoTotalVolume,
 	cargoTotalWeight,
 	cargoTotalBoxes,
-	groupSelectedIntoCargaOrders,
+	groupSelectedIntoCargoOrders,
 } from "@/lib/functions/delivery"
+import { useSession } from "@/hooks/auth/use-session"
 
 interface DeliveryPlannerProps {
 	open: boolean
@@ -31,24 +32,26 @@ interface DeliveryPlannerProps {
 	onConfirm: (cargos: Cargo[]) => void
 }
 
-function newCargo(): Cargo {
-	return {
-		id: uuid(),
-		car_id: null,
-		delivery_date: null,
-		orders: [],
-		status: "draft",
-	}
-}
-
 export default function DeliveryPlanner({
 	open,
 	onOpenChange,
 	selectedItems,
 	onConfirm,
 }: DeliveryPlannerProps) {
+	const { user } = useSession()
 	const { data: cars } = useCars()
-	const [cargos, setCargos] = useState<Cargo[]>([newCargo()])
+
+	// função local que já "conhece" o user_id atual
+	const createCargo = (): Cargo => ({
+		id: uuid(),
+		car_id: "",
+		user_id: user?.id ?? "",
+		delivery_date: null,
+		orders: [],
+		status: "pending",
+	})
+
+	const [cargos, setCargos] = useState<Cargo[]>([createCargo()])
 	const [unassignedOrders, setUnassignedOrders] = useState<CargoOrder[]>([])
 
 	console.log("unassignedOrders", unassignedOrders)
@@ -58,10 +61,10 @@ export default function DeliveryPlanner({
 	// re-sincroniza sempre que o dialog abre com a seleção atual
 	useEffect(() => {
 		if (!open) return
-		setCargos([newCargo()])
-		setUnassignedOrders(groupSelectedIntoCargaOrders(selectedItems))
+		setCargos([createCargo()])
+		setUnassignedOrders(groupSelectedIntoCargoOrders(selectedItems))
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [open])
+	}, [open, user?.id])
 
 	function assignToCargo(order: CargoOrder, cargaId: string) {
 		setUnassignedOrders((prev) =>
@@ -110,7 +113,7 @@ export default function DeliveryPlanner({
 	}
 
 	function addCargo() {
-		setCargos((prev) => [...prev, newCargo()])
+		setCargos((prev) => [...prev, createCargo()])
 	}
 
 	function removeCargo(cargo_id: string) {
