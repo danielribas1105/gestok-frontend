@@ -3,14 +3,18 @@
 import ModalWrapper from "@/components/layout/modal-wrapper"
 import InventoryForm, { StockMovementPayload } from "./inventory-form"
 import { useProducts } from "@/hooks/products/use-products"
+import { Inventory } from "@/schemas/Inventory"
+import InventoryProductForm from "./inventory-product"
 
 interface InventoryModalProps {
 	open: boolean
+	inventoryProduct?: Inventory
 	onOpenChange: (v: boolean) => void
 }
 
 export default function InventoryModal({
 	open,
+	inventoryProduct,
 	onOpenChange,
 }: InventoryModalProps) {
 	const { data: products, isLoading } = useProducts()
@@ -33,18 +37,29 @@ export default function InventoryModal({
 		<ModalWrapper
 			open={open}
 			onOpenChange={onOpenChange}
-			width="60vw"
+			width={`${inventoryProduct ? "40vw" : "60vw"}`}
 			maxHeight="90vh"
 			title={"Adicionar produtos"}
-			description={
-				"Selecione o produto, insira a quantidade e clique em adicionar"
+			description={`${
+				inventoryProduct
+					? "Escolha o tipo de movimentação, insira a quantidade e clique em atualizar estoque"
+					: "Selecione o produto, insira a quantidade e clique em adicionar"
 			}
+			`}
 		>
-			<InventoryForm
-				products={products ?? []}
-				onSubmit={handleSubmit}
-				onCancel={() => onOpenChange(false)}
-			/>
+			{inventoryProduct ? (
+				<InventoryProductForm
+					product={inventoryProduct}
+					onSuccess={() => onOpenChange(false)}
+					onCancel={() => onOpenChange(false)}
+				/>
+			) : (
+				<InventoryForm
+					products={products ?? []}
+					onSubmit={handleSubmit}
+					onCancel={() => onOpenChange(false)}
+				/>
+			)}
 		</ModalWrapper>
 	)
 }
