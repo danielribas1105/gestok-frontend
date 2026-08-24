@@ -4,6 +4,7 @@ import {
 	FileText,
 	IdCard,
 	Logs,
+	PackageCheck,
 	Store,
 	UserPen,
 	Van,
@@ -16,6 +17,11 @@ export const itemsMenu = [
 		title: "Pedidos",
 		url: "/home",
 		icon: Logs,
+	},
+	{
+		title: "Entregas",
+		url: "/delivery",
+		icon: PackageCheck,
 	},
 	{
 		title: "Estoque",
