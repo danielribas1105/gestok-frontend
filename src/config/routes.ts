@@ -33,13 +33,7 @@ export const routes = {
 		list: "/inventory",
 		updateBatch: "/inventory/batch",
 		update: (id: string) => `/inventory/${id}`,
-		delete: (id: string) => `/jobs/${id}`,
-	},
-	jobs: {
-		list: "/jobs",
-		create: "/jobs",
-		update: (id: string) => `/jobs/${id}`,
-		delete: (id: string) => `/jobs/${id}`,
+		delete: (id: string) => `/inventory/${id}`,
 	},
 	orders: {
 		list: "/orders",
