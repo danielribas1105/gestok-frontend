@@ -17,6 +17,7 @@ export const StockMovementSchema = z.object({
 	id: z.uuid(),
 	product_id: z.uuid(),
 	order_id: z.uuid(),
+	user_id: z.uuid().optional(),
 	code: z.string(),
 	movement_type: StockMovementTypeEnum,
 	quantity: z.number().positive("Valor deve ser positivo"),

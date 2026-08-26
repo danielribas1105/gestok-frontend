@@ -9,6 +9,7 @@ import {
 	ArrowDownCircle,
 	ArrowUpCircle,
 	AlertTriangle,
+	CalendarDays,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils"
 import { Inventory, StockMovement } from "@/schemas/Inventory"
 import { useInventoryMutations } from "@/hooks/inventory/use-inventory-mutations"
 import type { StockMovementPayload } from "./inventory-form"
+import { useSession } from "@/hooks/auth/use-session"
 
 type MovementType = StockMovement["movement_type"] // "in" | "out"
 
@@ -57,6 +59,9 @@ export default function InventoryProductForm({
 	onSuccess,
 	onCancel,
 }: InventoryProductFormProps) {
+	const [movementDate, setMovementDate] = useState<string>(
+		() => new Date().toISOString().split("T")[0],
+	)
 	const [movementType, setMovementType] = useState<MovementType>("in")
 	const [documentNumber, setDocumentNumber] = useState("")
 	const [quantityDraft, setQuantityDraft] = useState("")
@@ -66,6 +71,7 @@ export default function InventoryProductForm({
 	const [confirmOpen, setConfirmOpen] = useState(false)
 
 	const { createInventoryBatch } = useInventoryMutations()
+	const { user } = useSession()
 
 	const quantityLabel = useMemo(() => {
 		if (movementType === "out") return "Quantidade a remover"
@@ -86,6 +92,7 @@ export default function InventoryProductForm({
 		setDocumentNumber("")
 		setQuantityDraft("")
 		setObservations("")
+		setMovementDate(new Date().toISOString().split("T")[0])
 		setFormError(null)
 	}
 
@@ -96,6 +103,8 @@ export default function InventoryProductForm({
 				quantity: Number(quantityDraft),
 				movement_type: movementType,
 				code: documentNumber.trim(),
+				movement_date: new Date(movementDate),
+				user_id: user?.id,
 				observations:
 					observations.trim() ||
 					(movementType === "out"
@@ -112,6 +121,11 @@ export default function InventoryProductForm({
 		const value = Number(quantityDraft)
 		if (!quantityDraft || Number.isNaN(value) || value <= 0) {
 			setFormError("Informe uma quantidade maior que zero.")
+			return
+		}
+
+		if (!movementDate) {
+			setFormError("Informe a data da movimentação.")
 			return
 		}
 
@@ -227,6 +241,21 @@ export default function InventoryProductForm({
 					value={documentNumber}
 					onChange={(e) => {
 						setDocumentNumber(e.target.value)
+						setFormError(null)
+					}}
+				/>
+			</div>
+			<div className="flex flex-col gap-1.5">
+				<Label htmlFor="movement-date" className="flex items-center gap-1.5">
+					<CalendarDays className="size-4 text-muted-foreground" />
+					Data da movimentação
+				</Label>
+				<Input
+					id="movement-date"
+					type="date"
+					value={movementDate}
+					onChange={(e) => {
+						setMovementDate(e.target.value)
 						setFormError(null)
 					}}
 				/>

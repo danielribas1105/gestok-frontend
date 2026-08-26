@@ -9,6 +9,7 @@ import {
 	CheckCircle2,
 	Loader2,
 	ClipboardList,
+	CalendarDays,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ import { cn } from "@/lib/utils"
 import { StockMovement } from "@/schemas/Inventory"
 import { Product } from "@/schemas/Product"
 import { useInventoryMutations } from "@/hooks/inventory/use-inventory-mutations"
+import { useSession } from "@/hooks/auth/use-session"
 
 /**
  * Produto disponível para seleção no formulário.
@@ -54,6 +56,8 @@ export type StockMovementPayload = Pick<
 > & {
 	code?: StockMovement["code"]
 	observations?: StockMovement["observations"]
+	movement_date?: StockMovement["movement_date"]
+	user_id?: StockMovement["user_id"]
 }
 
 interface InventoryFormProps {
@@ -72,6 +76,11 @@ interface InventoryFormProps {
 	onCancel?: () => void
 }
 
+/** Data de hoje no formato aceito pelo <input type="date"> (YYYY-MM-DD). */
+function todayInputValue() {
+	return new Date().toISOString().split("T")[0]
+}
+
 export default function InventoryForm({
 	products,
 	defaultDocumentNumber,
@@ -81,6 +90,7 @@ export default function InventoryForm({
 	const [documentNumber, setDocumentNumber] = useState<string>(
 		defaultDocumentNumber ?? "",
 	)
+	const [movementDate, setMovementDate] = useState<string>(todayInputValue())
 	const [selectedProductId, setSelectedProductId] = useState<string>("")
 	const [quantityDraft, setQuantityDraft] = useState<string>("")
 	const [items, setItems] = useState<ReceivedItem[]>([])
@@ -89,6 +99,7 @@ export default function InventoryForm({
 	const [justAdded, setJustAdded] = useState<string | null>(null)
 
 	const { createInventoryBatch } = useInventoryMutations()
+	const { user } = useSession()
 
 	const selectedProduct = useMemo(
 		() => products.find((p) => p.id === selectedProductId) ?? null,
@@ -166,12 +177,19 @@ export default function InventoryForm({
 			return
 		}
 
+		if (!movementDate) {
+			setFormError("Informe a data da movimentação.")
+			return
+		}
+
 		const payload: StockMovementPayload[] = items.map((item) => ({
 			product_id: item.product_id,
 			quantity: item.quantity,
 			movement_type: "in",
 			code: documentNumber.trim(),
 			observations: "Recebimento de caixas via conferência de estoque",
+			movement_date: new Date(movementDate),
+			user_id: user?.id,
 		}))
 
 		console.log("payload", payload)
@@ -194,21 +212,41 @@ export default function InventoryForm({
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Romaneio de entrada — vai para order_id */}
-			<div className="flex gap-1.5">
-				<Label htmlFor="document-number" className="flex items-center gap-1.5">
-					<ClipboardList className="size-4 text-muted-foreground" />
-					Número do romaneio de entrada
-				</Label>
-				<Input
-					id="document-number"
-					placeholder="Ex: ROM0101/208933"
-					value={documentNumber}
-					onChange={(e) => {
-						setDocumentNumber(e.target.value)
-						setFormError(null)
-					}}
-					className="sm:max-w-xs"
-				/>
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				<div className="flex gap-1.5">
+					<Label
+						htmlFor="document-number"
+						className="flex items-center gap-1.5"
+					>
+						<ClipboardList className="size-4 text-muted-foreground" />
+						Número do romaneio de entrada
+					</Label>
+					<Input
+						id="document-number"
+						placeholder="Ex: ROM0101/208933"
+						value={documentNumber}
+						onChange={(e) => {
+							setDocumentNumber(e.target.value)
+							setFormError(null)
+						}}
+						className="sm:max-w-xs"
+					/>
+				</div>
+				<div className="flex flex-col gap-1.5">
+					<Label htmlFor="movement-date" className="flex items-center gap-1.5">
+						<CalendarDays className="size-4 text-muted-foreground" />
+						Data da movimentação
+					</Label>
+					<Input
+						id="movement-date"
+						type="date"
+						value={movementDate}
+						onChange={(e) => {
+							setMovementDate(e.target.value)
+							setFormError(null)
+						}}
+					/>
+				</div>
 			</div>
 			{/* Bloco de seleção de produto */}
 			<div className="rounded-xl border bg-muted/30 p-3">

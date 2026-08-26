@@ -28,6 +28,27 @@ export const DeliveryColumns: ColumnDef<DeliveryReadPayload>[] = [
 		},
 	},
 	{
+		accessorKey: "status",
+		header: () => <div className="text-center">Status</div>,
+		size: 60,
+		cell: ({ row }) => {
+			const status = row.getValue("status") as string
+			const statusColors: Record<string, string> = {
+				in_progress: "bg-blue-500",
+				concluded: "bg-green-500",
+				canceled: "bg-red-500",
+			}
+
+			return (
+				<div className="flex justify-center">
+					<span
+						className={`inline-block w-3 h-3 rounded-full ${statusColors[status] || "bg-yellow-400"}`}
+					/>
+				</div>
+			)
+		},
+	},
+	{
 		accessorKey: "order_code",
 		header: () => <div className="text-center">Pedido</div>,
 		size: 200,
