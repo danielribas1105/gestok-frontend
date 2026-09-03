@@ -46,17 +46,13 @@ export default function DeliveryPlanner({
 		id: uuid(),
 		car_id: "",
 		user_id: user?.id ?? "",
-		delivery_date: null,
+		schedule_date: null,
 		orders: [],
 		status: "pending",
 	})
 
 	const [cargos, setCargos] = useState<Cargo[]>([createCargo()])
 	const [unassignedOrders, setUnassignedOrders] = useState<CargoOrder[]>([])
-
-	console.log("unassignedOrders", unassignedOrders)
-	console.log("cargos", cargos)
-	console.log("cars", cars)
 
 	// re-sincroniza sempre que o dialog abre com a seleção atual
 	useEffect(() => {
@@ -136,7 +132,7 @@ export default function DeliveryPlanner({
 			if (cargo.orders.length === 0) continue
 			if (!cargo.car_id) issues.push("Carga sem veículo selecionado")
 			/* if (!cargo.driver_id) issues.push("Carga sem motorista selecionado") */
-			if (!cargo.delivery_date) issues.push("Carga sem data de entrega")
+			if (!cargo.schedule_date) issues.push("Carga sem data de entrega")
 			const car = cars?.find((c) => c.id === cargo.car_id)
 			if (
 				car &&

@@ -22,7 +22,7 @@ export interface Cargo {
 	id: string // uuid temporário até salvar no backend
 	car_id: string
 	user_id: string
-	delivery_date: Date | null | undefined // ISO date (yyyy-mm-dd)
+	schedule_date: string | null // ISO date (yyyy-mm-dd)
 	orders: CargoOrder[]
 	status: DeliveryStatus
 }
@@ -38,9 +38,10 @@ export interface DeliveryCreatePayload {
 	status: DeliveryStatus
 	observations: string
 	created_at: Date | null | undefined
+	scheduled_at: Date | string | null | undefined
 	departed_at: Date | null | undefined
-	delivery_at: Date | null | undefined
-	delivery_confirmed: boolean
+	delivered_at: Date | null | undefined
+	delivered_confirmed: boolean
 }
 
 export interface DeliveryReadPayload {
@@ -53,9 +54,10 @@ export interface DeliveryReadPayload {
 	status: DeliveryStatus
 	observations: string
 	created_at: Date | null | undefined
+	scheduled_at: Date | null | undefined
 	departed_at: Date | null | undefined
-	delivery_at: Date | null | undefined
-	delivery_confirmed: boolean
+	delivered_at: Date | null | undefined
+	delivered_confirmed: boolean
 
 	order_code: string
 	car: string

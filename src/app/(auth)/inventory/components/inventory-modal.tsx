@@ -63,16 +63,3 @@ export default function InventoryModal({
 		</ModalWrapper>
 	)
 }
-
-/**
- * Exemplo de produtos extraídos da sua planilha (pedidostabelaander.xlsx),
- * apenas para referência de como o objeto InventoryProduct deve ser montado
- * a partir do backend (id real viria do banco):
- *
- * const products: InventoryProduct[] = [
- *   { id: crypto.randomUUID(), name: "BISCOITO MAIZENA RANCHEIRO 20X300G", unit: "CX" },
- *   { id: crypto.randomUUID(), name: "CAFE RANCHEIRO ALMOFADA 250G", unit: "KG" },
- *   { id: crypto.randomUUID(), name: "CAPPUCCINO TRADICIONAL PTE200G", unit: "CX" },
- *   { id: crypto.randomUUID(), name: "COOKIES CHOCOLATE RANCHEIRO 40X60G", unit: "CX" },
- * ]
- */

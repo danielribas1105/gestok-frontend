@@ -3,20 +3,11 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Inventory } from "@/schemas/Inventory"
 
-/**
- * Colunas usadas pela MESMA tabela nas 3 visões. O que muda entre
- * "flat", "por pedido" e "por produto" não é a definição de colunas,
- * e sim o estado `grouping` passado ao useReactTable (ver orders-explorer.tsx).
- *
- * Colunas numéricas têm `aggregationFn` definido, para que quando o
- * TanStack Table agrupar linhas ele saiba somar quantidade e valor
- * automaticamente nas linhas de grupo.
- */
 export const InventoryColumns: ColumnDef<Inventory>[] = [
 	{
 		accessorKey: "product_code",
 		header: () => <div className="text-center">Código</div>,
-		size: 200,
+		size: 150,
 		cell: ({ row }) => {
 			const product_code = row.getValue("product_code") ?? "Não cadastrado"
 			return <div className="flex justify-center">{product_code as string}</div>
@@ -25,7 +16,7 @@ export const InventoryColumns: ColumnDef<Inventory>[] = [
 	{
 		accessorKey: "product_name",
 		header: () => <div className="text-left">Produto</div>,
-		size: 400,
+		size: 350,
 		cell: ({ row }) => {
 			const product_name = row.getValue("product_name")
 			return <div className="flex justify-left">{product_name as string}</div>

@@ -2,7 +2,6 @@
 
 import { routes } from "@/config/routes"
 import { clientApi } from "@/lib/api/client"
-import { CarUpdate } from "@/schemas/Car"
 import { DeliveryCreatePayload } from "@/types/Delivery"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -35,24 +34,30 @@ export function useDeliveryMutations() {
 
 	// UPDATE
 	const updateDelivery = useMutation({
-		mutationFn: ({ id, data }: { id: string; data: Partial<CarUpdate> }) =>
-			clientApi(routes.cars.update(id), {
+		mutationFn: ({
+			id,
+			data,
+		}: {
+			id: string
+			data: Partial<DeliveryCreatePayload>
+		}) =>
+			clientApi(routes.delivery.update(id), {
 				method: "PUT",
 				body: JSON.stringify(data),
 			}),
 
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["cars"] })
-			toast.success("Veículo atualizado com sucesso ✨")
+			queryClient.invalidateQueries({ queryKey: ["delivery"] })
+			toast.success("Entrega atualizada com sucesso ✨")
 		},
 
 		onError: (error: any) => {
 			if (error.status === 404) {
-				toast.error("Veículo não encontrado")
+				toast.error("Entrega não encontrada")
 				return
 			}
 
-			toast.error(error.message)
+			toast.error(error.message || "Erro ao atualizar entrega")
 		},
 	})
 

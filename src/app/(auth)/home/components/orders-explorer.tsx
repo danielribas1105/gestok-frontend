@@ -1,36 +1,35 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useDeliveryMutations } from "@/hooks/delivery/use-delivery-mutations"
+import { ProductQuantityCheck } from "@/hooks/orders/use-products-quantity-check"
+import { cargoTotalWeight } from "@/lib/functions/delivery"
+import { cn } from "@/lib/utils"
+import { Cargo, DeliveryCreatePayload } from "@/types/Delivery"
+import { OrderItemRow } from "@/types/Order"
 import {
 	flexRender,
 	getCoreRowModel,
 	getExpandedRowModel,
 	getGroupedRowModel,
 	getSortedRowModel,
-	useReactTable,
 	GroupingState,
 	RowSelectionState,
+	useReactTable,
 } from "@tanstack/react-table"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-	Table,
-	TableHeader,
-	TableBody,
-	TableRow,
-	TableHead,
-	TableCell,
-} from "@/components/ui/table"
 import { ChevronDown, ChevronRight } from "lucide-react"
-import { OrderItemRow } from "@/types/Order"
-import { getOrdersColumns } from "./orders-columns"
-import { cn } from "@/lib/utils"
-import { OrderStatusLegend } from "./order-status-legend"
+import { useEffect, useMemo, useState } from "react"
 import DeliveryPlanner from "../../delivery/components/delivery-planner"
-import { ProductQuantityCheck } from "@/hooks/orders/use-products-quantity-check"
-import { Cargo, DeliveryCreatePayload } from "@/types/Delivery"
-import { Delivery } from "@/schemas/Delivery"
-import { cargoTotalWeight } from "@/lib/functions/delivery"
-import { useDeliveryMutations } from "@/hooks/delivery/use-delivery-mutations"
+import { OrderStatusLegend } from "./order-status-legend"
+import { getOrdersColumns } from "./orders-columns"
 
 type ViewMode = "flat" | "by_order" | "by_product"
 
@@ -53,8 +52,8 @@ function buildDeliveriesPayload(
 			weight: String(order.total_kg ?? cargoTotalWeight(cargo)),
 			observations: "",
 			status: cargo.status, // "pending" já vem de createCargo()
-			delivery_confirmed: false,
-			delivery_at: cargo.delivery_date ?? undefined,
+			scheduled_at: cargo.schedule_date ?? null,
+			delivered_confirmed: false,
 		})),
 	)
 }
@@ -369,6 +368,7 @@ export function OrdersExplorer({
 				onConfirm={(cargos) => {
 					console.log("cargas confirmadas", cargos)
 					const deliveries = buildDeliveriesPayload(cargos)
+					console.log("deliveries", deliveries)
 					createDelivery.mutate(deliveries, {
 						onSuccess: () => {
 							setPlannerOpen(false)

@@ -34,7 +34,9 @@ export const DeliveryColumns: ColumnDef<DeliveryReadPayload>[] = [
 		cell: ({ row }) => {
 			const status = row.getValue("status") as string
 			const statusColors: Record<string, string> = {
-				in_progress: "bg-blue-500",
+				pending: "bg-yellow-400",
+				in_transit: "bg-blue-500",
+				return: "bg-purple-600",
 				concluded: "bg-green-500",
 				canceled: "bg-red-500",
 			}
@@ -42,7 +44,7 @@ export const DeliveryColumns: ColumnDef<DeliveryReadPayload>[] = [
 			return (
 				<div className="flex justify-center">
 					<span
-						className={`inline-block w-3 h-3 rounded-full ${statusColors[status] || "bg-yellow-400"}`}
+						className={`inline-block w-3 h-3 rounded-full ${statusColors[status] || "bg-zinc-500"}`}
 					/>
 				</div>
 			)
@@ -77,7 +79,7 @@ export const DeliveryColumns: ColumnDef<DeliveryReadPayload>[] = [
 	},
 	{
 		accessorKey: "weight",
-		header: () => <div className="text-center">Peso total (Kg)</div>,
+		header: () => <div className="text-center">Peso (Kg)</div>,
 		size: 120,
 		cell: ({ row }) => {
 			const weight = Number(row.getValue("weight")).toLocaleString("pt-BR")
@@ -94,15 +96,15 @@ export const DeliveryColumns: ColumnDef<DeliveryReadPayload>[] = [
 		},
 	},
 	{
-		accessorKey: "delivery_at",
+		accessorKey: "scheduled_at",
 		header: () => <div className="text-center">Agendamento</div>,
 		size: 120,
 		cell: ({ row }) => {
-			const raw = row.getValue("delivery_at") as string
+			const raw = row.getValue("scheduled_at") as string
 			const date = new Date(raw)
 			return (
 				<div className="text-[12px] text-center text-muted-foreground">
-					{date.toLocaleDateString("pt-BR")}
+					{raw ? date.toLocaleDateString("pt-BR") : "-"}
 				</div>
 			)
 		},
@@ -122,14 +124,15 @@ export const DeliveryColumns: ColumnDef<DeliveryReadPayload>[] = [
 		},
 	},
 	{
-		accessorKey: "delivery_confirmed",
+		accessorKey: "delivered_at",
 		header: () => <div className="text-center">Entregue</div>,
 		size: 120,
 		cell: ({ row }) => {
-			const raw = row.getValue("delivery_confirmed") as boolean
+			const raw = (row.getValue("delivered_at") as string) ?? ""
+			const date = new Date(raw)
 			return (
 				<div className="text-[12px] text-center text-muted-foreground">
-					{raw ? "OK" : "-"}
+					{raw ? date.toLocaleDateString("pt-BR") : "-"}
 				</div>
 			)
 		},

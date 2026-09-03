@@ -9,6 +9,15 @@ import { AlertCircle, CheckCircle2, Loader2, PauseCircle } from "lucide-react"
 
 type GroupStockStatus = "in_stock" | "partial" | "no_stock" | "on_hold" | null
 
+type GroupOrderStatus =
+	| "pending"
+	| "processed"
+	| "blocked"
+	| "in_transit"
+	| "canceled"
+	| "concluded"
+	| null
+
 function renderStockStatusBadge(status: GroupStockStatus) {
 	if (status === "on_hold") {
 		return (
@@ -45,6 +54,38 @@ function renderStockStatusBadge(status: GroupStockStatus) {
 	return <div className="text-center text-gray-300">—</div>
 }
 
+function renderOrderStatusBadge(status: GroupOrderStatus) {
+	if (status === "pending") {
+		return (
+			<div className="flex justify-center">
+				<span className="inline-block w-3 h-3 rounded-full bg-yellow-400" />
+			</div>
+		)
+	}
+	if (status === "in_transit") {
+		return (
+			<div className="flex justify-center">
+				<span className="inline-block w-3 h-3 rounded-full bg-blue-500" />
+			</div>
+		)
+	}
+	if (status === "canceled") {
+		return (
+			<div className="flex justify-center">
+				<span className="inline-block w-3 h-3 rounded-full bg-red-500" />
+			</div>
+		)
+	}
+	if (status === "concluded") {
+		return (
+			<div className="flex justify-center">
+				<span className="inline-block w-3 h-3 rounded-full bg-green-500" />
+			</div>
+		)
+	}
+	return <div className="text-center text-gray-300">—</div>
+}
+
 // resume os status individuais dos itens de um grupo (pedido ou produto)
 // em um único status — mesma regra usada pelo backend em
 // _aggregate_order_stock_status, mas recalculada aqui pra também
@@ -64,6 +105,24 @@ function aggregateGroupStockStatus(
 	if (relevant.every((s) => s === "in_stock")) return "in_stock"
 	if (relevant.every((s) => s === "no_stock")) return "no_stock"
 	return "partial"
+}
+
+function aggregateGroupOrderStatus(
+	itemStatuses: (OrderItemRow["status"] | undefined)[],
+): GroupOrderStatus {
+	if (itemStatuses.length === 0) return null
+
+	/* if (itemStatuses.every((s) => s === "on_hold")) return "on_hold" */
+
+	// itens em hold não entram na conta de suficiente/insuficiente —
+	// eles não disputaram estoque, então não representam falta real
+	const relevant = itemStatuses.filter((s) => s !== "blocked")
+	/* if (relevant.length === 0) return "on_hold" */
+
+	if (relevant.every((s) => s === "processed" || s === "canceled"))
+		return "in_transit"
+	if (relevant.every((s) => s === "concluded")) return "concluded"
+	return "pending"
 }
 
 /**
@@ -96,6 +155,34 @@ export function getOrdersColumns({
 	const canToggleHold = userRole === "admin" || userRole === "operator"
 
 	return [
+		{
+			accessorKey: "status",
+			header: () => <div className="text-center">Status</div>,
+			size: 60,
+			cell: ({ row }) => {
+				const status = row.getValue("status") as string
+				const statusColors: Record<string, string> = {
+					in_progress: "bg-blue-500",
+					processed: "bg-blue-500",
+					concluded: "bg-green-500",
+					canceled: "bg-red-500",
+				}
+
+				return (
+					<div className="flex justify-center">
+						<span
+							className={`inline-block w-3 h-3 rounded-full ${statusColors[status] || "bg-yellow-400"}`}
+						/>
+					</div>
+				)
+			},
+			aggregationFn: (_columnId, leafRows) => {
+				const statuses = leafRows.map((r) => r.original.status)
+				return aggregateGroupOrderStatus(statuses)
+			},
+			aggregatedCell: (info) =>
+				renderOrderStatusBadge(info.getValue<GroupOrderStatus>()),
+		},
 		{
 			id: "select",
 			header: () => <div className="text-center">Selecione</div>,
@@ -150,10 +237,23 @@ export function getOrdersColumns({
 			enableGrouping: false,
 			cell: ({ row }) => {
 				if (row.getIsGrouped()) return null
+				if (
+					row.original.status === "processed" ||
+					row.original.status === "concluded"
+				) {
+					return renderStockStatusBadge("in_stock")
+				}
 				return renderStockStatusBadge(row.original.stock_item_status ?? null)
 			},
 			aggregationFn: (_columnId, leafRows) => {
-				const statuses = leafRows.map((r) => r.original.stock_item_status)
+				// mesma regra do `cell`: pedido já processado (em rota/entregue)
+				// conta como in_stock, independente do stock_item_status original,
+				// pois o estoque já foi comprometido/baixado ao ir para o motorista.
+				const statuses = leafRows.map((r) =>
+					r.original.status === "processed" || r.original.status === "concluded"
+						? ("in_stock" as const)
+						: r.original.stock_item_status,
+				)
 				return aggregateGroupStockStatus(statuses)
 			},
 			aggregatedCell: (info) =>
@@ -323,27 +423,6 @@ export function getOrdersColumns({
 				return <div className="flex justify-left">{total_value}</div>
 			},
 			aggregatedCell: (info) => formatCurrencyBR(Number(info.getValue())),
-		},
-		{
-			accessorKey: "status",
-			header: () => <div className="text-center">Status</div>,
-			size: 60,
-			cell: ({ row }) => {
-				const status = row.getValue("status") as string
-				const statusColors: Record<string, string> = {
-					in_progress: "bg-blue-500",
-					concluded: "bg-green-500",
-					canceled: "bg-red-500",
-				}
-
-				return (
-					<div className="flex justify-center">
-						<span
-							className={`inline-block w-3 h-3 rounded-full ${statusColors[status] || "bg-yellow-400"}`}
-						/>
-					</div>
-				)
-			},
 		},
 	]
 }

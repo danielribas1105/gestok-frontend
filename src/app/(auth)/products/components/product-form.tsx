@@ -36,7 +36,7 @@ type ProductFormState = {
 	description: string
 	code: string
 	unit: string
-	kg_per_unit: number
+	weight_kg_per_unit: number
 	volume_m3_per_unit: number
 	boxes_per_pallet: number
 	value: number
@@ -57,7 +57,7 @@ export default function ProductForm({
 		name: product?.name || "",
 		code: product?.code || "",
 		unit: product?.unit || "",
-		kg_per_unit: product?.kg_per_unit || "",
+		weight_kg_per_unit: product?.weight_kg_per_unit || "",
 		volume_m3_per_unit: product?.volume_m3_per_unit || "",
 		boxes_per_pallet: product?.boxes_per_pallet || "",
 		active: product?.active ?? true,
@@ -84,7 +84,9 @@ export default function ProductForm({
 
 		const payload = {
 			...form,
-			kg_per_unit: form.kg_per_unit ? parseNumberBR(form.kg_per_unit) : null,
+			weight_kg_per_unit: form.weight_kg_per_unit
+				? parseNumberBR(form.weight_kg_per_unit)
+				: null,
 			volume_m3_per_unit: form.volume_m3_per_unit
 				? parseNumberBR(form.volume_m3_per_unit)
 				: null,
@@ -197,11 +199,9 @@ export default function ProductForm({
 					<Label htmlFor="unit-weight">Peso (Kg)</Label>
 					<Input
 						id="unit-weight"
-						placeholder="Peso do produto pela unidade"
-						value={form.kg_per_unit}
-						onChange={(e) =>
-							handleChange("kg_per_unit", e.target.value.toUpperCase())
-						}
+						placeholder="Peso total emb. transporte"
+						value={form.weight_kg_per_unit}
+						onChange={(e) => handleChange("weight_kg_per_unit", e.target.value)}
 						disabled={loading}
 					/>
 				</div>
@@ -209,11 +209,9 @@ export default function ProductForm({
 					<Label htmlFor="unit-volum">Volume (m3)</Label>
 					<Input
 						id="unit-volum"
-						placeholder="Volume de 1 unidade"
+						placeholder="Volume total de uma caixa"
 						value={form.volume_m3_per_unit}
-						onChange={(e) =>
-							handleChange("volume_m3_per_unit", e.target.value.toUpperCase())
-						}
+						onChange={(e) => handleChange("volume_m3_per_unit", e.target.value)}
 						disabled={loading}
 					/>
 				</div>
@@ -223,9 +221,7 @@ export default function ProductForm({
 						id="boxes-pallet"
 						placeholder="Caixas por pallet"
 						value={form.boxes_per_pallet}
-						onChange={(e) =>
-							handleChange("boxes_per_pallet", e.target.value.toUpperCase())
-						}
+						onChange={(e) => handleChange("boxes_per_pallet", e.target.value)}
 						disabled={loading}
 					/>
 				</div>

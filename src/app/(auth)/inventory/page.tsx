@@ -8,13 +8,10 @@ import { Inventory } from "@/schemas/Inventory"
 import InventoryModal from "./components/inventory-modal"
 
 export default function InventoryPage() {
-	const [open, setOpen] = useState(false)
 	const { data: inventory, isLoading } = useInventory()
 	const [selectedInventoryProduct, setSelectedInventoryProduct] = useState<
 		Inventory | undefined
 	>(undefined)
-
-	console.log("inventory", inventory)
 
 	return (
 		<section className="flex flex-col gap-7">

@@ -9,16 +9,17 @@ import { formatDate } from "@/utils/format-date"
 
 export interface ProductCardProps {
 	product: Product
+	onClick?: (product: Product) => void
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onClick }: ProductCardProps) {
 	const [open, setOpen] = useState(false)
 
 	return (
 		<>
 			<article
 				className="h-56 border-2 rounded-lg p-3 flex flex-col justify-between gap-2 cursor-pointer hover:border-primary transition-colors"
-				onClick={() => setOpen(true)}
+				onClick={() => onClick?.(product)}
 				onKeyDown={(e) => e.key === "Enter" && setOpen(true)}
 				role="button"
 				tabIndex={0}
@@ -64,7 +65,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 						<LabelCard
 							description="Peso bruto do produto"
 							label="Peso (Kg)"
-							value={product.kg_per_unit ?? "-"}
+							value={product.weight_kg_per_unit ?? "-"}
 						/>
 						<LabelCard
 							description="Volume unitário"
