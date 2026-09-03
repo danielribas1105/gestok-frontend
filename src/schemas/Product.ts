@@ -11,7 +11,7 @@ export const ProductSchema = z.object({
 	code: z.string(),
 	unit: z.string().min(2, "Unidade deve ter pelo menos 2 caracteres"),
 	volume_m3_per_unit: z.number().nonnegative().nullable().optional(),
-	kg_per_unit: z.number().nonnegative().nullable().optional(),
+	weight_kg_per_unit: z.number().nonnegative().nullable().optional(),
 	boxes_per_pallet: z.number().nonnegative().nullable().optional(),
 	active: z.boolean().optional(),
 	image: z.string().nullable().optional(),

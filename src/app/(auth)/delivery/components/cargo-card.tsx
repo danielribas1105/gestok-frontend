@@ -77,7 +77,7 @@ export default function CargoCard({
 						onValueChange={(v) => {
 							const selectedCar = cars?.find((c) => c.id === v)
 							onUpdate({
-								car_id: v || null,
+								car_id: v || undefined,
 							})
 						}}
 						required
@@ -104,14 +104,14 @@ export default function CargoCard({
 					/>
 				</div>
 				<div className="space-y-1">
-					<Label htmlFor="delivery-date">Agendar entrega*</Label>
+					<Label htmlFor="cargo-delivery-date">Agendar entrega*</Label>
 					<Input
-						id="delivery-date"
+						id="cargo-delivery-date"
 						type="date"
 						placeholder="dd/mm/aaaa"
-						value={cargo.delivery_date ?? ""}
+						value={cargo.schedule_date ?? ""}
 						onChange={(e) =>
-							onUpdate({ delivery_date: e.target.value || null })
+							onUpdate({ schedule_date: e.target.value || null })
 						}
 					/>
 				</div>
