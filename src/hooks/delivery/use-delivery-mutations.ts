@@ -2,6 +2,7 @@
 
 import { routes } from "@/config/routes"
 import { clientApi } from "@/lib/api/client"
+import { queryKeys } from "@/lib/query-keys"
 import { DeliveryCreatePayload } from "@/types/Delivery"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -19,6 +20,7 @@ export function useDeliveryMutations() {
 
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["delivery"] })
+			queryClient.invalidateQueries({ queryKey: queryKeys.ordersRaw })
 			toast.success("Entrega(s) criada(s) com sucesso 🎉")
 		},
 

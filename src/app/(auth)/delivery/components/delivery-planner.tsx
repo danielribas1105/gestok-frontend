@@ -24,11 +24,13 @@ import {
 	groupSelectedIntoCargoOrders,
 } from "@/lib/functions/delivery"
 import { useSession } from "@/hooks/auth/use-session"
+import { Spinner } from "@/components/ui/spinner"
 
 interface DeliveryPlannerProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	selectedItems: OrderItemRow[]
+	isLoadingDelivery: boolean
 	onConfirm: (cargos: Cargo[]) => void
 }
 
@@ -36,6 +38,7 @@ export default function DeliveryPlanner({
 	open,
 	onOpenChange,
 	selectedItems,
+	isLoadingDelivery,
 	onConfirm,
 }: DeliveryPlannerProps) {
 	const { user } = useSession()
@@ -210,8 +213,17 @@ export default function DeliveryPlanner({
 								onConfirm(cargos.filter((c) => c.orders.length > 0))
 							}
 						>
-							Confirmar {cargos.filter((c) => c.orders.length > 0).length}{" "}
-							Carga(s)
+							{isLoadingDelivery ? (
+								<span className="flex items-center justify-center gap-2">
+									<Spinner scale={1.2} />
+									<p>Carregando...</p>
+								</span>
+							) : (
+								<p>
+									Confirmar {cargos.filter((c) => c.orders.length > 0).length}{" "}
+									carga(s)
+								</p>
+							)}
 						</Button>
 					</div>
 				</DialogFooter>

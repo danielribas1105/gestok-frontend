@@ -133,6 +133,13 @@ export function OrdersExplorer({
 		],
 	)
 
+	// pedido só pode ser selecionado/programado enquanto ainda está pending;
+	// qualquer outro status (processed, blocked, in_transit, canceled, concluded)
+	// trava a linha porque não há mais ação possível na tabela de pedidos
+	function isOrderLocked(item?: OrderItemRow) {
+		return !item || item.status !== "pending"
+	}
+
 	const table = useReactTable({
 		data: rows,
 		columns, //columns: ordersColumns,
@@ -142,8 +149,18 @@ export function OrdersExplorer({
 		},
 		onGroupingChange: () => {},
 		onRowSelectionChange: setRowSelection,
-		enableRowSelection: true,
-		enableSubRowSelection: true, // marcar o grupo marca os itens filhos (pedido inteiro)
+		enableRowSelection: (row) => {
+			const original = row.getIsGrouped()
+				? row.subRows[0]?.original
+				: row.original
+			return !isOrderLocked(original)
+		},
+		enableSubRowSelection: (row) => {
+			// no grupo "por pedido", só deixa marcar o pedido inteiro se
+			// TODOS os itens ainda estiverem pending
+			if (!row.getIsGrouped()) return true
+			return row.subRows.every((sub) => !isOrderLocked(sub.original))
+		},
 		getExpandedRowModel: getExpandedRowModel(),
 		getGroupedRowModel: getGroupedRowModel(),
 		getCoreRowModel: getCoreRowModel(),
@@ -189,6 +206,27 @@ export function OrdersExplorer({
 		selectedItemIds,
 		onSelectionChange,
 	])
+
+	useEffect(() => {
+		setRowSelection((prev) => {
+			if (Object.keys(prev).length === 0) return prev
+			let changed = false
+			const next: RowSelectionState = {}
+			for (const row of table.getRowModel().flatRows) {
+				if (!prev[row.id]) continue
+				const original = row.getIsGrouped()
+					? row.subRows[0]?.original
+					: row.original
+				if (isOrderLocked(original)) {
+					changed = true
+				} else {
+					next[row.id] = true
+				}
+			}
+			return changed ? next : prev
+		})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [rows])
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -240,14 +278,16 @@ export function OrdersExplorer({
 										? row.subRows[0]?.original
 										: row.original
 									const isHeld = original?.stock_hold
+									const isLocked = isOrderLocked(original)
 
 									return (
 										<TableRow
 											key={row.id}
 											className={cn(
 												row.getIsGrouped() && "font-medium",
+												isLocked && "opacity-50",
 												isHeld
-													? "bg-amber-50"
+													? "bg-amber-100/80"
 													: row.getIsGrouped()
 														? "bg-gray-50/70"
 														: row.getIsSelected()
@@ -365,6 +405,7 @@ export function OrdersExplorer({
 				open={plannerOpen}
 				onOpenChange={setPlannerOpen}
 				selectedItems={selectedLeafRows}
+				isLoadingDelivery={createDelivery.isPending}
 				onConfirm={(cargos) => {
 					console.log("cargas confirmadas", cargos)
 					const deliveries = buildDeliveriesPayload(cargos)

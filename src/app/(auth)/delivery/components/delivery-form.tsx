@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select"
 import { useDeliveryMutations } from "@/hooks/delivery/use-delivery-mutations"
 import { DeliveryReadPayload, DeliveryStatus } from "@/types/Delivery"
+import { Loader2 } from "lucide-react"
 import { useState } from "react"
 
 interface DeliveryFormProps {
@@ -163,7 +164,14 @@ export default function DeliveryForm({
 					Cancelar
 				</Button>
 				<Button type="submit" disabled={loading}>
-					{loading ? "Salvando..." : "Salvar"}
+					{loading ? (
+						<>
+							<Loader2 className="mr-1.5 size-4 animate-spin" />
+							<p>Salvando...</p>
+						</>
+					) : (
+						<p>Salvar</p>
+					)}
 				</Button>
 			</div>
 		</form>

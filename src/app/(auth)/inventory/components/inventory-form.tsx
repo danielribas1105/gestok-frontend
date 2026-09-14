@@ -70,8 +70,7 @@ interface InventoryFormProps {
 	 * order_id do pedido de saída, então o valor é sempre digitado aqui.
 	 */
 	defaultDocumentNumber?: string
-	/** Chamado ao clicar em "Atualizar estoque" com a listagem consolidada. */
-	onSubmit: (items: StockMovementPayload[]) => Promise<void> | void
+	onSuccess?: () => void
 	/** Chamado ao cancelar (ex.: fechar o modal). */
 	onCancel?: () => void
 }
@@ -84,7 +83,7 @@ function todayInputValue() {
 export default function InventoryForm({
 	products,
 	defaultDocumentNumber,
-	onSubmit,
+	onSuccess,
 	onCancel,
 }: InventoryFormProps) {
 	const [documentNumber, setDocumentNumber] = useState<string>(
@@ -198,6 +197,7 @@ export default function InventoryForm({
 			setFormError(null)
 			await createInventoryBatch.mutateAsync(payload)
 			setItems([])
+			onSuccess?.()
 		} catch (err) {
 			setFormError(
 				err instanceof Error
