@@ -7,12 +7,28 @@ import { DataTable } from "@/components/ui/data-table"
 import { useProducts } from "@/hooks/products/use-products"
 import { ProductsColumns } from "./components/products-columns"
 import { Product } from "@/schemas/Product"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ProductsPage() {
 	const { data: products = [], isLoading } = useProducts()
 	const [selectedProduct, setSelectedProduct] = useState<Product | undefined>(
 		undefined,
 	)
+
+	if (isLoading) {
+		return (
+			<section>
+				<div className="flex flex-col gap-1 items-center pt-16">
+					<Skeleton className="h-6 w-[70%] rounded-md" />
+					<Skeleton className="h-6 w-[70%] rounded-md" />
+					<Skeleton className="h-6 w-[70%] rounded-md" />
+					<Skeleton className="h-6 w-[70%] rounded-md" />
+					<Skeleton className="h-6 w-[70%] rounded-md" />
+					<Skeleton className="h-6 w-[70%] rounded-md" />
+				</div>
+			</section>
+		)
+	}
 
 	return (
 		<section className="flex flex-col gap-7">

@@ -19,7 +19,7 @@ export default function InventoryModal({
 }: InventoryModalProps) {
 	const { data: products, isLoading } = useProducts()
 
-	async function handleSubmit(items: StockMovementPayload[]) {
+	/* async function handleSubmit(items: StockMovementPayload[]) {
 		const response = await fetch("/api/stock-movements", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -31,7 +31,7 @@ export default function InventoryModal({
 		}
 
 		onOpenChange(false)
-	}
+	} */
 
 	return (
 		<ModalWrapper
@@ -56,7 +56,7 @@ export default function InventoryModal({
 			) : (
 				<InventoryForm
 					products={products ?? []}
-					onSubmit={handleSubmit}
+					onSuccess={() => onOpenChange(false)}
 					onCancel={() => onOpenChange(false)}
 				/>
 			)}

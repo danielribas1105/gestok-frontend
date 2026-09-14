@@ -186,24 +186,28 @@ export function getOrdersColumns({
 		{
 			id: "select",
 			header: () => <div className="text-center">Selecione</div>,
-			cell: ({ row }) => (
-				<div
-					className="flex justify-center"
-					onClick={(e) => e.stopPropagation()} // não deve disparar o expand do grupo
-				>
-					<Checkbox
-						checked={
-							row.getIsSelected()
-								? true
-								: row.getIsSomeSelected()
-									? "indeterminate"
-									: false
-						}
-						onCheckedChange={(value) => row.toggleSelected(!!value)}
-						aria-label="Selecionar pedido"
-					/>
-				</div>
-			),
+			cell: ({ row }) => {
+				const canSelect = row.getCanSelect()
+				return (
+					<div
+						className="flex justify-center"
+						onClick={(e) => e.stopPropagation()} // não deve disparar o expand do grupo
+					>
+						<Checkbox
+							checked={
+								row.getIsSelected()
+									? true
+									: row.getIsSomeSelected()
+										? "indeterminate"
+										: false
+							}
+							onCheckedChange={(value) => row.toggleSelected(!!value)}
+							disabled={!canSelect}
+							aria-label="Selecionar pedido"
+						/>
+					</div>
+				)
+			},
 			size: 36,
 			enableGrouping: false,
 			enableSorting: false,
@@ -278,8 +282,9 @@ export function getOrdersColumns({
 					: row.original
 
 				if (!original) return null
-				const { order_id, stock_hold } = original
+				const { order_id, stock_hold, status } = original
 				const isPending = pendingHoldOrderId === order_id
+				const isLocked = status !== "pending"
 
 				if (isPending) {
 					return (
@@ -289,12 +294,17 @@ export function getOrdersColumns({
 					)
 				}
 
-				if (!canToggleHold) {
-					// "user" só visualiza o estado, sem poder alterar
+				if (!canToggleHold || isLocked) {
+					// "user" só visualiza o estado, e admin/operator também não podem
+					// mais alterar depois que o pedido saiu de pending
 					return (
 						<div
 							className="flex justify-center text-gray-400"
-							title="Sem permissão para alterar"
+							title={
+								isLocked
+									? "Pedido não está mais pendente"
+									: "Sem permissão para alterar"
+							}
 						>
 							{stock_hold ? <PauseCircle className="h-4 w-4" /> : null}
 						</div>

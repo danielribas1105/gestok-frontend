@@ -77,7 +77,7 @@ export default function LoginForm() {
 				variant="default"
 				type="submit"
 				disabled={pending}
-				className="w-full rounded-lg bg-primary/90 px-4 py-5 text-sm font-semibold text-white shadow-sm hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150"
+				className="w-full rounded-lg bg-primary/90 px-4 py-5 text-sm font-semibold text-white shadow-sm hover:bg-primary hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150"
 			>
 				{pending ? (
 					<span className="flex items-center justify-center gap-2">
